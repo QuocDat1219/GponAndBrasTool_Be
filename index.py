@@ -1,13 +1,15 @@
 import uvicorn
 import os
-
 from fastapi import FastAPI
+
+from routes.ipAddressRoutes import ipAddress
 from routes.userRoutes import user
 
 app = FastAPI()
 
 # sử dụng router
-app.include_router(user)\
+app.include_router(user)
+app.include_router(ipAddress)
 
 # chỉ định cho server chạy trên cổng nào    
 if __name__ == "__main__":

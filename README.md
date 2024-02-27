@@ -14,4 +14,4 @@ Dự án sử dụng python 3.7.x
 
 # Khởi động dự án
 
-    Sử dụng lệnh uvicorn index:app --reload dự án sẽ được khởi động ở địa chỉ http://localhost:800
+    Sử dụng lệnh uvicorn index:app --reload dự án sẽ được khởi động.
