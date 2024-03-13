@@ -4,44 +4,54 @@ from config.db import conn
 from schemas.ipAddressSchemas import serializeDict, serializeList
 from bson import ObjectId
 from service.sshBras import ssh_bras_command
-ipAddress = APIRouter()
+ipAddressRoutes = APIRouter()
 
 # Tạo mới địa chỉ ip kết nối bras
 
-@ipAddress.post('/api/ipddress/create')
+@ipAddressRoutes.post('/api/ipaddress/')
 async def create_ip_address(ipAddress:IpAddress):
     try:
         createdIp = conn.demo.ipaddress.insert_one(dict(ipAddress))
         if createdIp:
-            return HTTPException(status_code=200, detail=f"Thêm mới thành công!")
+            return HTTPException(status_code=200, detail=f"success")
         else:
-            return HTTPException(status_code=500,detail=f"Thêm mới không thành công!")
+            return HTTPException(status_code=500,detail=f"error")
     except:
-        return HTTPException(status_code=500,detail=f"Đã xảy ra lỗi, hãy thử lại!")
+        return HTTPException(status_code=500,detail=f"error")
 # Lấy danh sách ip address
 
-@ipAddress.get('/api/ipddress/')
+@ipAddressRoutes.get('/api/ipaddress/')
 async def get_all_ip_addresses():
     allIp = serializeList(conn.demo.ipaddress.find())
     return allIp
 
-@ipAddress.delete('/api/ipddress/delete/{id}')
+@ipAddressRoutes.get("/api/ipddress/{id}")
+async def get_ip_address(id):
+    ipAddress = serializeDict(conn.demo.ipaddress.find_one({"_id": ObjectId(id)}))
+    return ipAddress
+
+@ipAddressRoutes.delete('/api/ipaddress/{id}')
 async def delete_ip_address(id):
     try:
         deleted_id = conn.demo.ipaddress.delete_one({"_id": ObjectId(id)})
-        if(deleted_id):
-            return HTTPException(status_code = 200, detail=f"Xóa thành công!")
+        if deleted_id.deleted_count == 1:
+            return HTTPException(status_code = 200, detail=f"success")
         else:
-            return HTTPException(status_code = 400, detail=f"Không tìm thấy địa chỉ ip")
+            return HTTPException(status_code = 500, detail=f"error")
     except:
-        return HTTPException(status_code = 500, detail=f"Đã xảy ra lỗi, hãy thử lại")
+        return HTTPException(status_code = 500, detail=f"error")
 
-@ipAddress.post('/api/bras/custom')
-async def custom_bras(data: dict):
+@ipAddressRoutes.put("/api/ipaddress/{id}")
+async def update_ip_address(id, ipAddress: IpAddress):
     try:
-        # print(data)
-        ssh_bras_command(data['commands'], data['ipaddress'], data['username'], data['password'])
-    except Exception as e:
-        error_message = f"SSH Connection to { data.ipaddress} failed: {str(e)}"
-        # self.update_output(f"\n{error_message}\n")
-        print(f"Errr")
+        conn.demo.ipaddress.find_one_and_update(
+            {"_id": ObjectId(id)},
+            {"$set": dict(ipAddress)}
+        )
+        updatedIpAddress = conn.demo.ipaddress.find_one({"_id": ObjectId(id)})
+        if updatedIpAddress:
+            return HTTPException(status_code=200, detail=f"success")
+        else:
+            return HTTPException(status_code=500, detail=f"error")
+    except:
+        return HTTPException(status_code=500, detail=f"error")
