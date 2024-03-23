@@ -1,8 +1,5 @@
 .gitignore
 venv/
 .env
-__pycache__
-./model/__pycache__
-./routes/__pycache__
-./shemas/__pycache__
-./service/__pycache__
+__pycache__/
+*.py[cod]
