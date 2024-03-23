@@ -3,7 +3,7 @@ from models.ipAddressModel import IpAddress
 from config.db import conn
 from schemas.ipAddressSchemas import serializeDict, serializeList
 from bson import ObjectId
-from service.sshBras import ssh_bras_command
+from service.sshBras import phan_loai_thiet_bi
 ipAddressRoutes = APIRouter()
 
 # Tạo mới địa chỉ ip kết nối bras
@@ -55,3 +55,7 @@ async def update_ip_address(id, ipAddress: IpAddress):
             return HTTPException(status_code=500, detail=f"error")
     except:
         return HTTPException(status_code=500, detail=f"error")
+    
+@ipAddressRoutes.post('/api/bras/custom')
+async def custom_bras(data: dict):
+        phan_loai_thiet_bi(data['commands'], data['device_types'])
