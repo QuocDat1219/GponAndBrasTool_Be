@@ -8,9 +8,26 @@ Dự án sử dụng python 3.7.x
 
 # Cài đặt và cấu hình
 
-    - Tạo môi trường ảo bằng cách sử dụng lệnh: python -m venv venv
-    - Di chuyển vào venv, đối với linux sử dụng source ./venv/bin/Activate. Đối với Windows ./venv/Scripts/Activate
+    - Tạo môi trường ảo bằng cách sử dụng lệnh:
+    ```
+    python -m venv venv
+    ```
+    - Di chuyển vào venv, đối với linux sử dụng 
+    ```
+    source ./venv/bin/Activate
+    ```
+    Đối với Windows 
+    ```
+    ./venv/Scripts/Activate
+    ```
+    - Update pip 
+    ```
+    python -m pip install --upgrade pip
+    ```
     - Cài đặt các thư viện
+    ```
+    pip install pymongo python-dotenv paramiko fastapi 
+    ```
 
 # Khởi động dự án
 

@@ -1,6 +1,7 @@
 import uvicorn
 import os
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from routes.ipAddressRoutes import ipAddressRoutes
 from routes.deviceRoutes import deviceRoutes
@@ -12,8 +13,18 @@ from routes.vlanNetRoutes import vlanNetRoutes
 from routes.vlanMytvRoutes import vlanMytvRoutes
 from routes.onuRoutes import onuRoutes
 from routes.vlanImsRoutes import vlanImsRoutes
+
 app = FastAPI()
 
+origins = ["*"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 # sử dụng router
 app.include_router(ipAddressRoutes)
 app.include_router(deviceRoutes)

@@ -10,7 +10,7 @@ async def create_device(device:Device):
     try:
         created_device = conn.demo.device.insert_one(dict(device))
         if created_device:
-            return HTTPException(status_code=200, detail=f"success")
+            return HTTPException(status_code=200, detail={ "msg" : f"success", "data": serializeList(conn.demo.device.find())})
         else:
             return HTTPException(status_code=500, detail=f"error")
     except:
