@@ -58,4 +58,4 @@ async def update_ip_address(id, ipAddress: IpAddress):
     
 @ipAddressRoutes.post('/api/bras/custom')
 async def custom_bras(data: dict):
-        phan_loai_thiet_bi(data['commands'], data['device_types'])
+        phan_loai_thiet_bi(data['commands'], data['device_types'], data["thongso1"],data["thongso2"],data["thongso3"])
