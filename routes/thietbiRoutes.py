@@ -10,13 +10,14 @@ thietbiRoutes = APIRouter()
 async def create_thietbi(thietbi: ThietBi):
     try:
         create_thietbi = conn.demo.thietbi.insert_one(dict(thietbi))
-        if
+        if create_thietbi:
+            return HTTPException(status_code=200, detail="success")
+        else:
+            return HTTPException(status_code=500, detail="error")
     except:
         return HTTPException(status_code=500, detail="error") 
 
-
-
-@thietbiRoutes.get("/api/thietbi/")
+@thietbiRoutes.get("/api/thietbi/{tenthietbi}")
 async def get_all_thietbi():
     thietbi_list = [serializeDict(thietbi) for thietbi in conn.demo.thietbi.find()]
     return thietbi_list
