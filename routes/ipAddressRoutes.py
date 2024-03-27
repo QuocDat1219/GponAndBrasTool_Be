@@ -13,7 +13,7 @@ async def create_ip_address(ipAddress:IpAddress):
     try:
         createdIp = conn.demo.ipaddress.insert_one(dict(ipAddress))
         if createdIp:
-            return HTTPException(status_code=200, detail=f"success")
+            return HTTPException(status_code=200, detail={ "msg" : f"success", "data": serializeList(conn.demo.ipaddress.find())})
         else:
             return HTTPException(status_code=500,detail=f"error")
     except:
