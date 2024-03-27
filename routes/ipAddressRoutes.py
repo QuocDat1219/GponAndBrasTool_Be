@@ -15,9 +15,9 @@ async def create_ip_address(ipAddress:IpAddress):
         if createdIp:
             return HTTPException(status_code=200, detail={ "msg" : f"success", "data": serializeList(conn.demo.ipaddress.find())})
         else:
-            return HTTPException(status_code=500,detail=f"error")
+            return HTTPException(status_code=500, detail={ "msg" : f"error"})
     except:
-        return HTTPException(status_code=500,detail=f"error")
+        return HTTPException(status_code=500,detail={ "msg" : f"error"})
 # Lấy danh sách ip address
 
 @ipAddressRoutes.get('/api/ipaddress/')
@@ -35,11 +35,11 @@ async def delete_ip_address(id):
     try:
         deleted_id = conn.demo.ipaddress.delete_one({"_id": ObjectId(id)})
         if deleted_id.deleted_count == 1:
-            return HTTPException(status_code = 200, detail=f"success")
+            return HTTPException(status_code = 200, detail={ "msg" : f"success", "data": serializeList(conn.demo.ipaddress.find())})
         else:
-            return HTTPException(status_code = 500, detail=f"error")
+            return HTTPException(status_code = 500,detail={ "msg" : f"error"})
     except:
-        return HTTPException(status_code = 500, detail=f"error")
+        return HTTPException(status_code = 500, detail={ "msg" : f"error"})
 
 @ipAddressRoutes.put("/api/ipaddress/{id}")
 async def update_ip_address(id, ipAddress: IpAddress):
@@ -50,11 +50,11 @@ async def update_ip_address(id, ipAddress: IpAddress):
         )
         updatedIpAddress = conn.demo.ipaddress.find_one({"_id": ObjectId(id)})
         if updatedIpAddress:
-            return HTTPException(status_code=200, detail=f"success")
+            return HTTPException(status_code=200, detail={ "msg" : f"success", "data": serializeList(conn.demo.ipaddress.find())})
         else:
-            return HTTPException(status_code=500, detail=f"error")
+            return HTTPException(status_code=500,detail={ "msg" : f"error"})
     except:
-        return HTTPException(status_code=500, detail=f"error")
+        return HTTPException(status_code=500,detail={ "msg" : f"error"})
     
 @ipAddressRoutes.post('/api/bras/custom')
 async def custom_bras(data: dict):

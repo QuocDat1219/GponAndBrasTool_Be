@@ -14,4 +14,4 @@ class IpAddress(BaseModel):
             return v
         except ValueError:
             # Nếu địa chỉ IP không hợp lệ, ném ra một HTTPException
-            raise HTTPException(status_code=400, detail="Địa chỉ IP không hợp lệ")
+            raise HTTPException(status_code=200, detail={ "msg" : f"Địa chỉ Ip không hợp lệ"})
