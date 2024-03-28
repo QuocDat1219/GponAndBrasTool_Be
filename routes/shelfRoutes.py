@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from models.shelfDeviceModel import Shelf
 from config.db import conn
-from schemas.systemDeviceSchemas import serializeDict,serializeList
+from schemas.shelfDeviceSchemas import serializeDict, serializeList
 from bson import ObjectId
 
 shelfRoutes = APIRouter()

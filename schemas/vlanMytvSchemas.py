@@ -1,4 +1,4 @@
-def vlanNetEntity(item) -> dict:
+def vlanMytvSchemas(item) -> dict:
     return {
         "id":str((item["_id"])),
         "number": item["number"],

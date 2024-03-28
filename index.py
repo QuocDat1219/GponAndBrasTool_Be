@@ -4,8 +4,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from routes.ipAddressRoutes import ipAddressRoutes
-from routes.deviceRoutes import deviceRoutes
-from routes.systemRoutes import systemRoutes
 from routes.shelfRoutes import shelfRoutes
 from routes.vlanNetRoutes import vlanNetRoutes
 from routes.vlanMytvRoutes import vlanMytvRoutes
@@ -24,8 +22,6 @@ app.add_middleware(
 )
 # sử dụng router
 app.include_router(ipAddressRoutes)
-app.include_router(deviceRoutes)
-app.include_router(systemRoutes)
 app.include_router(shelfRoutes)
 app.include_router(thietbiRoutes)
 app.include_router(vlanNetRoutes)

@@ -1,4 +1,4 @@
-def vlanNetEntity(item) -> dict:
+def vlanImsChemas(item) -> dict:
     return {
         "id":str((item["_id"])),
         "number": item["number"],

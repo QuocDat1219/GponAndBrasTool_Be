@@ -11,7 +11,7 @@ async def create_vlanMytv(vlanMytv: VlanMytv):
     try:
         created_vlanMytv = conn.demo.vlanmytv.insert_one(dict(vlanMytv))
         if created_vlanMytv:
-            return HTTPException(status_code=200, detail="success")
+            return HTTPException(status_code=200, detail={"msg": "success", "data": serializeList(conn.demo.vlanmytv.find())})
         else:
             return HTTPException(status_code=500, detail="error")
     except:
@@ -44,7 +44,7 @@ async def update_vlanMytv(id, vlanMytv: VlanMytv):
         )
         updated_vlanMytv = serializeDict(conn.demo.vlanmytv.find_one({"_id": ObjectId(id)}))
         if updated_vlanMytv:
-            return HTTPException(status_code=200, detail="success")
+            return HTTPException(status_code=200, detail={"msg": "success", "data": serializeList(conn.demo.vlanmytv.find())})
         else:
             return HTTPException(status_code=500, detail="error")
     except:
@@ -55,7 +55,7 @@ async def delete_vlanMytv(id):
     try:
         deleted_vlanMytv = conn.demo.vlanmytv.delete_one({"_id": ObjectId(id)})
         if deleted_vlanMytv.deleted_count > 0:
-           return HTTPException(status_code=200, detail="success")
+           return HTTPException(status_code=200, detail={"msg": "success", "data": serializeList(conn.demo.vlanmytv.find())})
         else:
            return HTTPException(status_code=500, detail="error")
     except:

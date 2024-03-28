@@ -11,7 +11,7 @@ async def create_vlanIms(vlanIms: VlanIMS):
     try:
         created_vlanIms = conn.demo.vlanims.insert_one(dict(vlanIms))
         if created_vlanIms:
-            return HTTPException(status_code=200, detail="success")
+            return HTTPException(status_code=200, detail={"msg": "success", "data": serializeList(conn.demo.vlanims.find())})
         else:
             return HTTPException(status_code=500, detail="error")
     except:
@@ -44,7 +44,7 @@ async def update_vlanIms(id, vlanIms: VlanIMS):
         )
         updated_vlanIms = serializeDict(conn.demo.vlanims.find_one({"_id": ObjectId(id)}))
         if updated_vlanIms:
-            return HTTPException(status_code=200, detail="success")
+            return HTTPException(status_code=200, detail={"msg": "success", "data": serializeList(conn.demo.vlanims.find())})
         else:
             return HTTPException(status_code=500, detail="error")
     except:
@@ -55,7 +55,7 @@ async def delete_vlanIms(id):
     try:
         deleted_vlanIms = conn.demo.vlanims.delete_one({"_id": ObjectId(id)})
         if deleted_vlanIms.deleted_count > 0:
-           return HTTPException(status_code=200, detail="success")
+           return HTTPException(status_code=200, detail={"msg": "success", "data": serializeList(conn.demo.vlanims.find())})
         else:
            return HTTPException(status_code=500, detail="error")
     except:

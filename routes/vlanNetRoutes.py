@@ -11,7 +11,7 @@ async def create_vlanNet(vlanNet: VlanNet):
     try:
         created_vlanNet = conn.demo.vlanNet.insert_one(dict(vlanNet))
         if created_vlanNet:
-            return HTTPException(status_code=200, detail="success")
+            return HTTPException(status_code=200, detail={"msg": "success", "data": serializeList(conn.demo.vlanNet.find())})
         else:
             return HTTPException(status_code=500, detail="error")
     except:
@@ -44,7 +44,7 @@ async def update_vlanNet(id, vlanNet: VlanNet):
         )
         updated_vlanNet = serializeDict(conn.demo.vlanNet.find_one({"_id": ObjectId(id)}))
         if updated_vlanNet:
-            return HTTPException(status_code=200, detail="success")
+            return HTTPException(status_code=200, detail={"msg": "success", "data": serializeList(conn.demo.vlanNet.find())})
         else:
             return HTTPException(status_code=500, detail="error")
     except:
@@ -55,7 +55,7 @@ async def delete_vlanNet(id):
     try:
         deleted_vlanNet = conn.demo.vlanNet.delete_one({"_id": ObjectId(id)})
         if deleted_vlanNet.deleted_count > 0:
-           return HTTPException(status_code=200, detail="success")
+           return HTTPException(status_code=200, detail={"msg": "success", "data": serializeList(conn.demo.vlanNet.find())})
         else:
            return HTTPException(status_code=500, detail="error")
     except:
