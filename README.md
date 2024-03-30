@@ -26,7 +26,7 @@ Dự án sử dụng python 3.7.x
     ```
     - Cài đặt các thư viện
     ```
-    pip install pymongo python-dotenv paramiko fastapi 
+    pip install pymongo python-dotenv paramiko fastapi uvicorn
     ```
 
 # Khởi động dự án
