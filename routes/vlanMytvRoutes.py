@@ -13,9 +13,9 @@ async def create_vlanMytv(vlanMytv: VlanMytv):
         if created_vlanMytv:
             return HTTPException(status_code=200, detail={"msg": "success", "data": serializeList(conn.demo.vlanmytv.find())})
         else:
-            return HTTPException(status_code=500, detail="error")
+            return HTTPException(status_code=500, detail={"msg": "error"})
     except:
-        return HTTPException(status_code=500, detail="error")
+        return HTTPException(status_code=500, detail={"msg": "error"})
 
 
 @vlanMytvRoutes.get("/api/vlanmytv/")
@@ -24,7 +24,7 @@ async def get_all_vlanMytv():
         all_vlanMytv = serializeList(conn.demo.vlanmytv.find())
         return all_vlanMytv
     except:
-        return HTTPException(status_code=500, detail="error")
+        return HTTPException(status_code=500, detail={"msg": "error"})
     
     
 @vlanMytvRoutes.get("/api/vlanmytv/{id}")
@@ -33,7 +33,7 @@ async def get_vlanMytv_by_id(id):
         vlanMytv = serializeDict(conn.demo.vlanmytv.find_one({"_id": ObjectId(id)}))
         return vlanMytv
     except:
-        return HTTPException(status_code=500, detail="error")
+        return HTTPException(status_code=500, detail={"msg": "error"})
         
 @vlanMytvRoutes.put("/api/vlanmytv/{id}")
 async def update_vlanMytv(id, vlanMytv: VlanMytv):
@@ -47,9 +47,9 @@ async def update_vlanMytv(id, vlanMytv: VlanMytv):
         if updated_vlanMytv:
             return HTTPException(status_code=200, detail={"msg": "success", "data": serializeList(conn.demo.vlanmytv.find())})
         else:
-            return HTTPException(status_code=500, detail="error")
+            return HTTPException(status_code=500, detail={"msg": "error"})
     except:
-        return HTTPException(status_code=500, detail="error") 
+        return HTTPException(status_code=500, detail={"msg": "error"}) 
 
 @vlanMytvRoutes.delete("/api/vlanmytv/{id}")
 async def delete_vlanMytv(id):
@@ -58,6 +58,6 @@ async def delete_vlanMytv(id):
         if deleted_vlanMytv.deleted_count > 0:
            return HTTPException(status_code=200, detail={"msg": "success", "data": serializeList(conn.demo.vlanmytv.find())})
         else:
-           return HTTPException(status_code=500, detail="error")
+           return HTTPException(status_code=500, detail={"msg": "error"})
     except:
-        return HTTPException(status_code=500, detail="error")
+        return HTTPException(status_code=500, detail={"msg": "error"})

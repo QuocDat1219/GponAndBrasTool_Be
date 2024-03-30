@@ -8,22 +8,6 @@ from service.gponMiniZTE import ssh_bras_gpon_mini_zte_command
 from service.gponHW import ssh_bras_gpon_hw_command
 from service.gponALU import ssh_bras_gpon_alu_command
 ipAddressRoutes = APIRouter()
-
-    
-@ipAddressRoutes.post('/api/bras/custom')
-async def custom_bras(data: dict):  # Thêm đối số mặc định cho websocket
-    loat_thiet_bi = data["device_types"]
-    if loat_thiet_bi == "GPON ZTE":
-        ssh_bras_gpon_zte_command(data['commands'], data["card"], data["port"], data["onu"], data["slid"])
-    elif loat_thiet_bi == "GPON MINI ZTE":
-        ssh_bras_gpon_mini_zte_command(data['commands'], data["card"], data["port"], data["onu"], data["slid"])
-    elif loat_thiet_bi == "GPON HW":
-        ssh_bras_gpon_hw_command(data['commands'], data["card"], data["port"], data["onu"], data["slid"])
-    elif loat_thiet_bi == "GPON ALU":
-        ssh_bras_gpon_alu_command(data['commands'], data["card"], data["port"], data["onu"], data["slid"])
-    else:
-        raise HTTPException(status_code=400, detail="Thiếu thông tin cần thiết trong dữ liệu gửi đi")
-
     
 # Tạo mới địa chỉ ip kết nối bras
 

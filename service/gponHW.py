@@ -22,14 +22,14 @@ def phan_loai_command(command,card, port, onu, slid):
             "ont delete  0  59"
         ]
 
-def ssh_bras_gpon_hw_command(commands,card, port, onu, slid):
+def ssh_bras_gpon_hw_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlannet):
     try:
         session = paramiko.SSHClient()
         session.load_system_host_keys()
         session.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         session.connect(hostname_bras_pre, username=user_bras, password=password_bras)
         
-        command = phan_loai_command(commands,card, port, onu, slid)
+        command = phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlannet)
         for cmd in command:
             print(cmd)
             stdin, stdout, stderr = session.exec_command(cmd)

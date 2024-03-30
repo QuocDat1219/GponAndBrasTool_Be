@@ -13,9 +13,9 @@ async def create_vlanIms(vlanIms: VlanIMS):
         if created_vlanIms:
             return HTTPException(status_code=200, detail={"msg": "success", "data": serializeList(conn.demo.vlanims.find())})
         else:
-            return HTTPException(status_code=500, detail="error")
+            return HTTPException(status_code=500, detail={"msg": "error"})
     except:
-        return HTTPException(status_code=500, detail="error")
+        return HTTPException(status_code=500, detail={"msg": "error"})
 
 
 @vlanImsRoutes.get("/api/vlanims/")
@@ -24,7 +24,7 @@ async def get_all_vlanIms():
         all_vlanIms = serializeList(conn.demo.vlanims.find())
         return all_vlanIms
     except:
-        return HTTPException(status_code=500, detail="error")
+        return HTTPException(status_code=500, detail={"msg": "error"})
     
     
 @vlanImsRoutes.get("/api/vlanims/{id}")
@@ -33,7 +33,7 @@ async def get_vlanIms_by_id(id):
         vlanIms = serializeDict(conn.demo.vlanims.find_one({"_id": ObjectId(id)}))
         return vlanIms
     except:
-        return HTTPException(status_code=500, detail="error")
+        return HTTPException(status_code=500, detail={"msg": "error"})
         
 @vlanImsRoutes.put("/api/vlanims/{id}")
 async def update_vlanIms(id, vlanIms: VlanIMS):
@@ -46,9 +46,9 @@ async def update_vlanIms(id, vlanIms: VlanIMS):
         if updated_vlanIms:
             return HTTPException(status_code=200, detail={"msg": "success", "data": serializeList(conn.demo.vlanims.find())})
         else:
-            return HTTPException(status_code=500, detail="error")
+            return HTTPException(status_code=500, detail={"msg": "error"})
     except:
-        return HTTPException(status_code=500, detail="error") 
+        return HTTPException(status_code=500, detail={"msg": "error"}) 
 
 @vlanImsRoutes.delete("/api/vlanims/{id}")
 async def delete_vlanIms(id):
@@ -57,6 +57,6 @@ async def delete_vlanIms(id):
         if deleted_vlanIms.deleted_count > 0:
            return HTTPException(status_code=200, detail={"msg": "success", "data": serializeList(conn.demo.vlanims.find())})
         else:
-           return HTTPException(status_code=500, detail="error")
+           return HTTPException(status_code=500, detail={"msg": "error"})
     except:
-        return HTTPException(status_code=500, detail="error")
+        return HTTPException(status_code=500, detail={"msg": "error"})

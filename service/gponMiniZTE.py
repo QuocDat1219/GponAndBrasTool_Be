@@ -88,14 +88,14 @@ def phan_loai_command(command,card, port, onu, slid):
         else:
             raise HTTPException(status_code=400, detail="Lệnh trên thiết bị này chưa được cập nhật")
         
-def ssh_bras_gpon_mini_zte_command(commands,card, port, onu, slid):
+def ssh_bras_gpon_mini_zte_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlannet):
     try:
         session = paramiko.SSHClient()
         session.load_system_host_keys()
         session.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         session.connect(hostname_bras_pre, username=user_bras, password=password_bras)
         
-        command = phan_loai_command(commands,card, port, onu, slid)
+        command = phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlannet)
         for cmd in command:
             print(cmd)
             stdin, stdout, stderr = session.exec_command(cmd)

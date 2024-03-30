@@ -9,6 +9,7 @@ from routes.vlanNetRoutes import vlanNetRoutes
 from routes.vlanMytvRoutes import vlanMytvRoutes
 from routes.vlanImsRoutes import vlanImsRoutes
 from routes.thietbiRoutes import thietbiRoutes
+from routes.controlDeviceRoutes import controlDeviceRoutes
 app = FastAPI()
 
 origins = ["*"]
@@ -27,6 +28,7 @@ app.include_router(thietbiRoutes)
 app.include_router(vlanNetRoutes)
 app.include_router(vlanMytvRoutes)
 app.include_router(vlanImsRoutes)
+app.include_router(controlDeviceRoutes)
 
 # chỉ định cho server chạy trên cổng nào    
 if __name__ == "__main__":

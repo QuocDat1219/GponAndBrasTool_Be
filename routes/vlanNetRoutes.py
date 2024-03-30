@@ -13,9 +13,9 @@ async def create_vlanNet(vlanNet: VlanNet):
         if created_vlanNet:
             return HTTPException(status_code=200, detail={"msg": "success", "data": serializeList(conn.demo.vlanNet.find())})
         else:
-            return HTTPException(status_code=500, detail="error")
+            return HTTPException(status_code=500, detail={"msg": "error"})
     except:
-        return HTTPException(status_code=500, detail="error")
+        return HTTPException(status_code=500, detail={"msg": "error"})
 
 
 @vlanNetRoutes.get("/api/vlannet/")
@@ -24,7 +24,7 @@ async def get_all_vlanNet():
         all_vlanNet = serializeList(conn.demo.vlanNet.find())
         return all_vlanNet
     except:
-        return HTTPException(status_code=500, detail="error")
+        return HTTPException(status_code=500, detail={"msg": "error"})
     
     
 @vlanNetRoutes.get("/api/vlannet/{id}")
@@ -33,7 +33,7 @@ async def get_vlanNet_by_id(id):
         vlanNet = serializeDict(conn.demo.vlanNet.find_one({"_id": ObjectId(id)}))
         return vlanNet
     except:
-        return HTTPException(status_code=500, detail="error")
+        return HTTPException(status_code=500, detail={"msg": "error"})
         
 @vlanNetRoutes.put("/api/vlannet/{id}")
 async def update_vlanNet(id, vlanNet: VlanNet):
@@ -46,9 +46,9 @@ async def update_vlanNet(id, vlanNet: VlanNet):
         if updated_vlanNet:
             return HTTPException(status_code=200, detail={"msg": "success", "data": serializeList(conn.demo.vlanNet.find())})
         else:
-            return HTTPException(status_code=500, detail="error")
+            return HTTPException(status_code=500, detail={"msg": "error"})
     except:
-        return HTTPException(status_code=500, detail="error") 
+        return HTTPException(status_code=500, detail={"msg": "error"}) 
 
 @vlanNetRoutes.delete("/api/vlannet/{id}")
 async def delete_vlanNet(id):
@@ -57,6 +57,6 @@ async def delete_vlanNet(id):
         if deleted_vlanNet.deleted_count > 0:
            return HTTPException(status_code=200, detail={"msg": "success", "data": serializeList(conn.demo.vlanNet.find())})
         else:
-           return HTTPException(status_code=500, detail="error")
+           return HTTPException(status_code=500, detail={"msg": "error"})
     except:
-        return HTTPException(status_code=500, detail="error")
+        return HTTPException(status_code=500, detail={"msg": "error"})

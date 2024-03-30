@@ -13,9 +13,9 @@ async def create_thietbi(thietbi: ThietBi):
         if create_thietbi:
             return HTTPException(status_code=200, detail={"msg": "success", "data": serializeList(conn.demo.thietbi.find())})
         else:
-            return HTTPException(status_code=500, detail="error")
+            return HTTPException(status_code=500, detail={"msg": "error"})
     except:
-        return HTTPException(status_code=500, detail="error") 
+        return HTTPException(status_code=500, detail={"msg": "error"}) 
 
 @thietbiRoutes.get("/api/thietbi/{loaithietbi}")
 async def get_thietbi_by_loai_thiet_bi(loaithietbi: str):
@@ -57,9 +57,9 @@ async def update_thietbi(id, thietbi: ThietBi):
         if updated_thietbi:
             return HTTPException(status_code=200, detail={"msg": "success", "data": serializeList(conn.demo.thietbi.find())})
         else:
-            return HTTPException(status_code=500, detail="error")
+            return HTTPException(status_code=500, detail={"msg": "error"})
     except:
-        return HTTPException(status_code=500, detail="error")
+        return HTTPException(status_code=500, detail={"msg": "error"})
 
 @thietbiRoutes.delete("/api/thietbi/{id}")
 async def delete_thietbi(id):
@@ -68,6 +68,6 @@ async def delete_thietbi(id):
         if deleted_thietbi.deleted_count == 1:
             return HTTPException(status_code=200, detail={"msg": "success", "data": serializeList(conn.demo.thietbi.find())})
         else:
-            return HTTPException(status_code=500, detail="error")
+            return HTTPException(status_code=500, detail={"msg": "error"})
     except:
-        return HTTPException(status_code=500, detail="error")
+        return HTTPException(status_code=500, detail={"msg": "error"})

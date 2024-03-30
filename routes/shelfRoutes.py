@@ -13,9 +13,9 @@ async def create_shelf(shelf: Shelf):
         if created_shelf:
             return HTTPException(status_code=200, detail="success")
         else:
-            return HTTPException(status_code=500, detail="error")
+            return HTTPException(status_code=500, detail={"msg": "error"})
     except:
-        return HTTPException(status_code=500, detail="error")
+        return HTTPException(status_code=500, detail={"msg": "error"})
 
 
 @shelfRoutes.get("/api/shelf/")
@@ -24,7 +24,7 @@ async def get_all_shelf():
         all_shelf = serializeList(conn.demo.shelf.find())
         return all_shelf
     except:
-        return HTTPException(status_code=500, detail="error")
+        return HTTPException(status_code=500, detail={"msg": "error"})
     
     
 @shelfRoutes.get("/api/shelf/{id}")
@@ -33,7 +33,7 @@ async def get_shelf_by_id(id):
         shelf = serializeDict(conn.demo.shelf.find_one({"_id": ObjectId(id)}))
         return shelf
     except:
-        return HTTPException(status_code=500, detail="error")
+        return HTTPException(status_code=500, detail={"msg": "error"})
         
 @shelfRoutes.put("/api/shelf/{id}")
 async def update_shelf(id, shelf:Shelf):
@@ -46,9 +46,9 @@ async def update_shelf(id, shelf:Shelf):
         if updated_shelf:
             return HTTPException(status_code=200, detail="success")
         else:
-            return HTTPException(status_code=500, detail="error")
+            return HTTPException(status_code=500, detail={"msg": "error"})
     except:
-        return HTTPException(status_code=500, detail="error") 
+        return HTTPException(status_code=500, detail={"msg": "error"}) 
 
 @shelfRoutes.delete("/api/shelf/{id}")
 async def delete_shelf(id):
@@ -57,6 +57,6 @@ async def delete_shelf(id):
         if deleted_shelf.deleted_count > 0:
            return HTTPException(status_code=200, detail="success")
         else:
-           return HTTPException(status_code=500, detail="error")
+           return HTTPException(status_code=500, detail={"msg": "error"})
     except:
-        return HTTPException(status_code=500, detail="error")
+        return HTTPException(status_code=500, detail={"msg": "error"})
