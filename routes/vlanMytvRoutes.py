@@ -38,11 +38,12 @@ async def get_vlanMytv_by_id(id):
 @vlanMytvRoutes.put("/api/vlanmytv/{id}")
 async def update_vlanMytv(id, vlanMytv: VlanMytv):
     try:
-        conn.demo.vlanMytv.find_one_and_update(
+        conn.demo.vlanmytv.find_one_and_update(
             {"_id": ObjectId(id)},
             {"$set": dict(vlanMytv)}
         )
         updated_vlanMytv = serializeDict(conn.demo.vlanmytv.find_one({"_id": ObjectId(id)}))
+       
         if updated_vlanMytv:
             return HTTPException(status_code=200, detail={"msg": "success", "data": serializeList(conn.demo.vlanmytv.find())})
         else:
