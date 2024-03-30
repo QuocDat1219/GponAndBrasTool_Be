@@ -24,7 +24,20 @@ async def get_thietbi_by_loai_thiet_bi(loaithietbi: str):
         thietbi_list = list(conn.demo.thietbi.find({"loaithietbi": loaithietbi}))
 
         if not thietbi_list:
-            raise HTTPException(status_code=200, detail=f"Không có thiết bị: {loaithietbi}")
+            return []
+        return serializeList(thietbi_list)
+    except Exception as e:
+        
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@thietbiRoutes.get("/api/thietbi/")
+async def get_all_thietbi():
+    try:
+        # Tìm kiếm tất cả các thiết bị có loại thiết bị là loaithietbi
+        thietbi_list = list(conn.demo.thietbi.find())
+
+        if not thietbi_list:
+            return []
         return serializeList(thietbi_list)
     except Exception as e:
         
