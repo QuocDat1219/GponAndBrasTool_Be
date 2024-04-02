@@ -27,6 +27,7 @@ def phan_loai_command(command,card, port, onu, slid):
                 f"onu 1 type GW040 pw 0100000001",
                 "exit",
                 f"interface gpon_onu-1/3/1:1",
+                "sn-bind disable",
                 "vport-mode manual",
                 "tcont 1 name HSI profile T4_300M",
                 "gemport 1 name HSI tcont 1",

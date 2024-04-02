@@ -2,13 +2,16 @@ import paramiko
 import time
 import threading
 import os
-from fastapi import HTTPException 
+import asyncio
+from fastapi import HTTPException
 
-# Lấy thông tin đăng nhập bras
-hostname_bras = os.getenv('HOSTNAME_BRAS')
-hostname_bras_pre = os.getenv('HOSTNAME_BRAS_PRE')
-user_bras = os.getenv('USER_BRAS')
-password_bras = os.getenv('PASSWORD')
+# Lấy thông tin đăng nhập gpon
+gpon_username = os.getenv("ZTE_USERNAME")
+gpon_password = os.getenv("ZTE_PASSWORD")
+gpon_ip = os.getenv("ZTE_IP")
+
+print(gpon_username)
+print(gpon_password)
 
 def phan_loai_command(command, card, port, onu, slid, vlanims, vlanmytv, vlannet):
     if command == "sync_password":
@@ -26,6 +29,7 @@ def phan_loai_command(command, card, port, onu, slid, vlanims, vlanmytv, vlannet
             f"onu {onu} type iGate-GW040 pw {slid}",
             "exit",
             f"interface gpon-onu_1/{card}/{port}:{onu}",
+            "sn-bind disable",
             "tcont 1 name HSI profile T4_100M",
             "gemport 1 name HSI tcont 1",
             "gemport 1 traffic-limit upstream D3000T3000 downstream D3000T3000",
@@ -55,7 +59,7 @@ def phan_loai_command(command, card, port, onu, slid, vlanims, vlanmytv, vlannet
             f"service-port 2 vport 2 user-vlan 12 vlan {vlanmytv}",
             "exit",
             f"igmp mvlan 99 receive-port gpon-onu_1/{card}/{port}:{onu} vport 2",
-            f"pon-onu-mng gpon-onu_1/{card}/{port}:{slid}", #HỎI LẠI XEM CÁI NÀY LÀ CÁI GÌ
+            f"pon-onu-mng gpon-onu_1/{card}/{port}:{onu}", #HỎI LẠI XEM CÁI NÀY LÀ CÁI GÌ
             "service 2 gemport 2 vlan 12",
             "vlan port eth_0/4 mode tag vlan 12",
             "vlan port wifi_0/2 mode tag vlan 12",
@@ -85,61 +89,46 @@ def phan_loai_command(command, card, port, onu, slid, vlanims, vlanmytv, vlannet
             "service 3 gemport 3 vlan 13"
         ]
     elif command == "check_capacity":
-        return ["show pon power attenuation gpon-onu_1/{card}/{port}:{onu}"]
+        return [f"show pon power attenuation gpon-onu_1/{card}/{port}:{onu}"]
     elif command == "check_mac":
-        return ["show mac gpon  onu  gpon-onu_1/{card}/{port}:{onu}"]
+        return [f"show mac gpon  onu  gpon-onu_1/{card}/{port}:{onu}"]
     else:
         raise HTTPException(status_code=400, detail="Lệnh trên thiết bị này chưa được cập nhật")
+    
+#Tạo hàm để thực hiện việc trả kết quả khi thực hiện lệnh chạy ở luồng khác   
+   
+async def execute_command(channel, cmd):
+    channel.send(cmd + '\n')
+    await asyncio.sleep(0.5)
+    output = channel.recv(65535).decode('utf-8').strip()
+    return output
 
-def ssh_bras_gpon_zte_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlannet):
+async def ssh_bras_gpon_zte_command(ipaddress, commands, card, port, onu, slid, vlanims, vlanmytv, vlannet):
     try:
-        # session = paramiko.SSHClient()
-        # session.load_system_host_keys()
-        # session.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        # session.connect(hostname_bras_pre, username=user_bras, password=password_bras)
-        
+        session = paramiko.SSHClient()
+        session.load_system_host_keys()
+        session.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        session.connect(ipaddress, username=gpon_username, password=gpon_password, timeout=100)
+        # Tạo kênh SSH
+        channel = session.invoke_shell()
+        # Nhận dữ liệu đầu ra ban đầu từ kênh
+        output = channel.recv(65535).decode('utf-8')
+        # Xác minh rằng bạn đang ở chế độ "enable"
+        if '#' not in output:
+            channel.send('enable\n')
+            await asyncio.sleep(1)
+            output = channel.recv(65535).decode('utf-8')
+        # Nhận kết quả trả về từ hàm phân loại chức năng sẽ thực hiện
         command = phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlannet)
+        results = []
+        # Chạy lần lượt từng command
         for cmd in command:
             print(cmd)
-            # stdin, stdout, stderr = session.exec_command(cmd)
-            # time.sleep(0.5)
-            # output = stdout.read().decode('utf-8').strip()
-            # print("output session: " + output)
-            return cmd
+            result = await execute_command(channel, cmd)
+            results.append(result)
+        session.close()
+        return results
     except HTTPException as http_error:
-        raise http_error  # Ném lại HTTPException để FastAPI xử lý
+        raise http_error
     except Exception as e:
-        print(e)
         raise HTTPException(status_code=500, detail=f"error: {str(e)}")
-
-
-# def ssh_bras_gpon_zte_command(commands, card, port, onu, slid, websocket: WebSocket):
-#     def execute_ssh_command(command, websocket):  # Thêm đối số websocket vào hàm
-#         try:
-#             session = paramiko.SSHClient()
-#             session.load_system_host_keys()
-#             session.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-#             session.connect(hostname_bras, username=user_bras, password=password_bras)
-            
-#             stdin, stdout, stderr = session.exec_command(command)
-#             time.sleep(0.5)
-#             for line in stdout:
-#                 websocket.send_text(line.strip())
-            
-#             session.close()
-#         except Exception as e:
-#             print(e)
-#             # Chuyển đối số websocket vào hàm send_text trong trường hợp xảy ra lỗi
-#             if websocket:
-#                 websocket.send_text(f"error: {str(e)}")
-
-#     try:
-#         command_list = phan_loai_command(commands, card, port, onu, slid)
-#         for cmd in command_list:
-#             thread = threading.Thread(target=execute_ssh_command, args=(cmd, websocket))  # Thêm đối số websocket
-#             thread.start()
-#         return "success"
-#     except Exception as e:
-#         print(e)
-#         raise HTTPException(status_code=500, detail=f"error: {str(e)}")
-
