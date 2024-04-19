@@ -1,8 +1,6 @@
-import paramiko
-import time
-import threading
 import os
 import asyncio
+import telnetlib3
 from fastapi import HTTPException
 
 # Lấy thông tin đăng nhập gpon
@@ -97,38 +95,33 @@ def phan_loai_command(command, card, port, onu, slid, vlanims, vlanmytv, vlannet
     
 #Tạo hàm để thực hiện việc trả kết quả khi thực hiện lệnh chạy ở luồng khác   
    
-async def execute_command(channel, cmd):
-    channel.send(cmd + '\n')
+async def execute_command(reader, writer, cmd):
+    writer.write((cmd + '\n').encode('ascii'))
+    await writer.drain()
     await asyncio.sleep(0.5)
-    output = channel.recv(65535).decode('utf-8').strip()
+    output = (await reader.read(65535)).decode('latin-1').strip()
     return output
 
 async def ssh_bras_gpon_zte_command(ipaddress, commands, card, port, onu, slid, vlanims, vlanmytv, vlannet):
     try:
-        session = paramiko.SSHClient()
-        session.load_system_host_keys()
-        session.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        session.connect(ipaddress, username=gpon_username, password=gpon_password, timeout=100)
-        # Tạo kênh SSH
-        channel = session.invoke_shell()
-        # Nhận dữ liệu đầu ra ban đầu từ kênh
-        output = channel.recv(65535).decode('utf-8')
-        # Xác minh rằng bạn đang ở chế độ "enable"
-        if '#' not in output:
-            channel.send('enable\n')
-            await asyncio.sleep(1)
-            output = channel.recv(65535).decode('utf-8')
-        # Nhận kết quả trả về từ hàm phân loại chức năng sẽ thực hiện
-        command = phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlannet)
+        reader, writer = await asyncio.open_connection(ipaddress, 23)
+
+        # Xác thực với tên người dùng và mật khẩu
+        writer.write((gpon_username + '\n').encode('ascii'))
+        await writer.drain()
+        await asyncio.sleep(1)
+        writer.write((gpon_password + '\n').encode('ascii'))
+        await writer.drain()
+        await asyncio.sleep(1)
+
+        # Thực thi các lệnh
         results = []
-        # Chạy lần lượt từng command
-        for cmd in command:
-            print(cmd)
-            result = await execute_command(channel, cmd)
+        for cmd in phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlannet):
+            result = await execute_command(reader, writer, cmd)
             results.append(result)
-        session.close()
-        return results
-    except HTTPException as http_error:
-        raise http_error
+        
+        writer.close()
+        await writer.wait_closed()
+        return HTTPException(status_code=200, detail=results)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"error: {str(e)}")

@@ -1,0 +1,17 @@
+#!/bin/bash
+
+NAME=brastool_be_app
+DIR=/home/hostvlg/brastoolbe
+USER=hostvlg
+GROUP=hostvlg
+WORKERS=3
+WORKER_CLASS=geventwebsocket.gunicorn.workers.GeventWebSocketWorker
+VENV=$DIR/venv/bin/activate
+BIND=$DIR/run/uvicorn.sock
+LOG_LEVEL=error
+
+cd $DIR
+source $VENV
+
+exec uvicorn index:app \
+  --uds $BIND \

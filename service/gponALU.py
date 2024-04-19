@@ -74,7 +74,7 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
 async def execute_command(channel, cmd):
     channel.send(cmd + '\n')
     await asyncio.sleep(0.5)
-    output = channel.recv(65535).decode('utf-8').strip()
+    output = channel.recv(65535).decode().strip()
     return output
 
 async def ssh_bras_gpon_alu_command(ipaddress, commands, card, port, onu, slid, vlanims, vlanmytv, vlannet):
@@ -100,7 +100,7 @@ async def ssh_bras_gpon_alu_command(ipaddress, commands, card, port, onu, slid, 
             print(cmd)
             result = await execute_command(channel, cmd)
             results.append(result)
-        return results
+            return HTTPException(status_code=200, detail= results)
     except HTTPException as http_error:
         raise http_error
     except Exception as e:

@@ -34,3 +34,4 @@ def serializeList(entity) -> list:
         serialized_list.append(serialized_dict)
     return serialized_list
 
+
