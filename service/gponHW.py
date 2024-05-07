@@ -11,10 +11,12 @@ user_bras = os.getenv('USER_BRAS')
 password_bras = os.getenv('PASSWORD')
 
 
-def phan_loai_command(command,card, port, onu, slid):
-    if command == "sync_password":
-        return ["display  ont autofind all"]
-    elif command == "delete_port":
+def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlannet):
+    if commands == "sync_password":
+        return ["display ont autofind all"]
+    elif commands == "view_inofo_onu":
+        return [f"display ont inf 0 port onuid"]
+    elif commands == "delete_port":
         return [
             "config",
             "undo service-port port 0/0/0 ont 59",
