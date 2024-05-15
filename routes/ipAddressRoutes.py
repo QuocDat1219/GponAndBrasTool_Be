@@ -3,10 +3,6 @@ from models.ipAddressModel import IpAddress
 from config.db import conn
 from schemas.ipAddressSchemas import serializeDict, serializeList
 from bson import ObjectId
-from service.gponZTE import ssh_bras_gpon_zte_command
-from service.gponMiniZTE import ssh_bras_gpon_mini_zte_command
-from service.gponHW import ssh_bras_gpon_hw_command
-from service.gponALU import ssh_bras_gpon_alu_command
 ipAddressRoutes = APIRouter()
     
 # Tạo mới địa chỉ ip kết nối bras

@@ -8,4 +8,4 @@ dotenv_path = Path('.env')
 load_dotenv(dotenv_path=dotenv_path)
 
 # Kết nối mongodb
-conn = MongoClient(os.getenv('mongodb+srv://quocdat1203:quocdat1203@db.wwee1za.mongodb.net/demo'))
+conn = MongoClient(os.getenv('MONGO_DB_URL'))

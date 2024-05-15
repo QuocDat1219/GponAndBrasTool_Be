@@ -35,7 +35,7 @@ async def get_all_thietbi():
     try:
         # Tìm kiếm tất cả các thiết bị có loại thiết bị là loaithietbi
         thietbi_list = list(conn.demo.thietbi.find())
-
+        print(thietbi_list)
         if not thietbi_list:
             return []
         return serializeList(thietbi_list)

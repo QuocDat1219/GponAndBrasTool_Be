@@ -5,9 +5,11 @@ import asyncio
 from fastapi import HTTPException
 
 # Lấy thông tin đăng nhập gpon
-gpon_username = os.getenv("GPON_ALU_USERNAME")
-gpon_password = os.getenv("GPON_ALU_PASSWORD")
+gpon_username = os.getenv("MINIZTE_USERNAME")
+gpon_password = os.getenv("MINIZTE_PASSWORD")
 
+print(gpon_username)
+print(gpon_password)
 
 def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlannet):
         if commands == "sync_password":
@@ -93,7 +95,7 @@ async def execute_command(channel, cmd):
     output = channel.recv(65535).decode().strip()
     return output
 
-async def ssh_bras_gpon_alu_command(ipaddress, commands, card, port, onu, slid, vlanims, vlanmytv, vlannet):
+async def ssh_bras_gpon_mini_zte_command(ipaddress, commands, card, port, onu, slid, vlanims, vlanmytv, vlannet):
     try:
         session = paramiko.SSHClient()
         session.load_system_host_keys()

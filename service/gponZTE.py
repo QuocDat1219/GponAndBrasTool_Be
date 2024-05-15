@@ -8,9 +8,6 @@ gpon_username = os.getenv("ZTE_USERNAME")
 gpon_password = os.getenv("ZTE_PASSWORD")
 gpon_ip = os.getenv("ZTE_IP")
 
-print(gpon_username)
-print(gpon_password)
-
 def phan_loai_command(command, card, port, onu, slid, vlanims, vlanmytv, vlannet):
     if command == "sync_password":
         return ["show pon onu uncfg"]
