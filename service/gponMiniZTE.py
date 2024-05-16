@@ -118,7 +118,7 @@ async def ssh_bras_gpon_mini_zte_command(ipaddress, commands, card, port, onu, s
             print(cmd)
             result = await execute_command(channel, cmd)
             results.append(result)
-            return HTTPException(status_code=200, detail= results)
+        return HTTPException(status_code=200, detail= results)
     except HTTPException as http_error:
         raise http_error
     except Exception as e:
