@@ -79,7 +79,7 @@ async def execute_command(channel, cmd, is_sync_password=False):
     output = channel.recv(65535).decode().strip()
     if is_sync_password:
         lines = output.splitlines()
-        filtered_lines = [line for line in lines if not re.search(r'[\x1b][[0-9;]*[A-Za-z]', line)]
+        filtered_lines = [line for line in lines if not re.search(r'\x1b\[[0-9;]*[A-Za-z]', line)]
         return '\n'.join(filtered_lines)
     return output
 
