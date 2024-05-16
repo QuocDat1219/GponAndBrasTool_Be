@@ -8,6 +8,10 @@ hostname_bras = os.getenv('HOSTNAME_BRAS')
 user_bras = os.getenv('USER_BRAS')
 password_bras = os.getenv('PASSWORD')
 
+print(hostname_bras)
+print(user_bras)
+print(password_bras)
+
 def phan_loai_command(command, mac):
     if command == "check_auth_mac":
         return f'sho_sub_mac {mac}\n'
