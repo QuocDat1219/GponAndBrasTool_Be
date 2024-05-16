@@ -72,15 +72,24 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
 
 #Hàm thực thi các command
 async def execute_command(channel, cmd, is_sync_password=False):
-    #Thực thi cmd
     channel.send(cmd + '\n')
     await asyncio.sleep(0.5)
-    #Nhận kết quả đầu ra
-    output = channel.recv(65535).decode().strip()
+    
+    output = ''
+    while True:
+        part = channel.recv(65535).decode().strip()
+        output += part
+        if is_sync_password and 'unprovision-onu count :' in part:
+            break
+        if 'typ:isadmin>#' in part:
+            break
+        await asyncio.sleep(0.5)
+
     if is_sync_password:
         lines = output.splitlines()
         filtered_lines = [line for line in lines if not re.search(r'\x1b\[[0-9;]*[A-Za-z]', line)]
         return '\n'.join(filtered_lines)
+    
     return output
 
 async def ssh_bras_gpon_alu_command(ipaddress, commands, card, port, onu, slid, vlanims, vlanmytv, vlannet):
@@ -105,7 +114,7 @@ async def ssh_bras_gpon_alu_command(ipaddress, commands, card, port, onu, slid, 
         for cmd in command:
             print(cmd)
             result = await execute_command(channel, cmd, commands == "sync_password")
-            #Gán các kết quả trả về vào mảng
+            # Gán các kết quả trả về vào mảng
             results.append(result)
         return HTTPException(status_code=200, detail=results)
     except HTTPException as http_error:
