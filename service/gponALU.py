@@ -16,6 +16,7 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
         elif commands == "delete_port":
             return [
                 f"configure equipment ont interface 1/1/{card}/{port}/{onu} admin-state down",
+                "exit all",
                 f"configure equipment ont no interface 1/1/{card}/{port}/{onu}",
                 "exit all"
             ]
@@ -41,7 +42,7 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
         elif commands == "dv_mytv":
             return [
                 f"configure qos interface 1/1/{card}/{port}/{onu}/14/1 upstream-queue 4 bandwidth-profile name:IPTV_up",
-                "exit all\n",
+                "exit all",
                 f"configure qos interface 1/1/{card}/{port}/{onu}/14/1 queue 4 shaper-profile name:IPTV_down_12M",
                 "exit all",
                 f"configure bridge port 1/1/{card}/{port}/{onu}/14/1 vlan-id 12 tag single-tagged network-vlan {vlanmytv} vlan-scope local",
@@ -70,12 +71,13 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
         else:
             raise HTTPException(status_code=400, detail="Lệnh trên thiết bị này chưa được cập nhật")
 
-#Hàm thực thi các command
-async def execute_command(channel, cmd, is_sync_password=False):
+# Hàm thực thi các command cho sync_password
+async def execute_command_for_syncPassword(channel, cmd, is_sync_password=False):
     channel.send(cmd + '\n')
-    await asyncio.sleep(0.5)
+    await asyncio.sleep(1)
     
     output = ''
+    # Đợi đến khi có lệnh unprovision-onu count: xuất hiện và kết thúc bằng lệnh typ:isadmin># (chỉ thực hiện cho sync_password)
     while True:
         part = channel.recv(65535).decode().strip()
         output += part
@@ -84,12 +86,33 @@ async def execute_command(channel, cmd, is_sync_password=False):
         if 'typ:isadmin>#' in part:
             break
         await asyncio.sleep(0.5)
-
-    if is_sync_password:
-        lines = output.splitlines()
-        filtered_lines = [line for line in lines if not re.search(r'\x1b\[[0-9;]*[A-Za-z]', line)]
-        return '\n'.join(filtered_lines)
     
+    # Loại bỏ các ký tự load và thay thế bằng dấu xuống dòng
+    if is_sync_password:
+        # Loại bỏ các ký tự load "\u001b[1D\\" và thay thế chúng bằng khoảng trắng
+        output = re.sub(r'\\u001b\[1D\\', '', output)
+        # Loại bỏ các ký tự load "\u001b[1D|" và thay thế chúng bằng khoảng trắng
+        output = re.sub(r'\\u001b\[1D\|', '', output)
+        # Loại bỏ các ký tự load "\u001b[1D/" và thay thế chúng bằng khoảng trắng
+        output = re.sub(r'\\u001b\[1D\/', '', output)
+        # Loại bỏ các ký tự load "\u001b[1D-" và thay thế chúng bằng khoảng trắng
+        output = re.sub(r'\\u001b\[1D\-', '', output)
+        # Loại bỏ các ký tự load "\u001b[1D" và thay thế chúng bằng khoảng trắng
+        output = re.sub(r'\\u001b\[1D', '', output)
+        # Loại bỏ các ký tự load "\n-\b\b" và thay thế chúng bằng khoảng trắng
+        output = re.sub(r'\n-\b\b', '', output)
+        
+        # Trả về kết quả đã chỉnh sửa
+        return output.strip()
+    
+    # Trả về kết quả không chỉnh sửa
+    return output.strip()
+
+# Hàm thực thi các command khác
+async def execute_command(channel, cmd):
+    channel.send(cmd + '\n')
+    await asyncio.sleep(0.5)
+    output = channel.recv(65535).decode().strip()
     return output
 
 async def ssh_bras_gpon_alu_command(ipaddress, commands, card, port, onu, slid, vlanims, vlanmytv, vlannet):
@@ -113,7 +136,10 @@ async def ssh_bras_gpon_alu_command(ipaddress, commands, card, port, onu, slid, 
         # Chạy lần lượt từng command
         for cmd in command:
             print(cmd)
-            result = await execute_command(channel, cmd, commands == "sync_password")
+            if commands == "sync_password":
+                result = await execute_command_for_syncPassword(channel, cmd)
+            else:
+                result = await execute_command(channel, cmd)
             # Gán các kết quả trả về vào mảng
             results.append(result)
         return HTTPException(status_code=200, detail=results)
