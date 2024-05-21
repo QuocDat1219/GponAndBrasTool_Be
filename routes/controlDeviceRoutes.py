@@ -4,7 +4,7 @@ from service.gponZTE import ssh_bras_gpon_zte_command
 from service.gponMiniZTE import ssh_bras_gpon_mini_zte_command
 from service.gponHW import ssh_bras_gpon_hw_command
 from service.gponALU import ssh_bras_gpon_alu_command
-from service.sshBras import ssh_bras_command_with_mac, ssh_bras_command_with_username
+from service.sshBras import ssh_bras_command_with_mac, ssh_bras_command_with_username, ssh_bras_command
 controlDeviceRoutes = APIRouter()
                
 @controlDeviceRoutes.post('/api/gpon/control')
@@ -33,16 +33,21 @@ async def ssh_gpon(data: dict):  # Thêm đối số mặc định cho websocket
     
 @controlDeviceRoutes.post('/api/bras/control')
 def ssh_bras(data: dict):
-    if "command" not in data:
-        raise HTTPException(status_code=400, detail={"msg": "Không tìm thấy command"})
-    
-    if "mac" in data:
+    if "command" in data and "mac" not in data and "username_bras" not in data:
+        command = data["command"]
+        print("aaaaaaa")
+        return ssh_bras_command(command)
+    elif "mac" in data and "command" in data:
         mac = data["mac"]
         command = data["command"]
+        print(command)
+        print(mac)
         return ssh_bras_command_with_mac(command, mac)
-    elif "username_bras" in data:
+    elif "username_bras" in data and "command" in data:
         username = data["username_bras"]
         command = data["command"]
+        print(command)
+        print(username)
         return ssh_bras_command_with_username(command, username)
     else:
         raise HTTPException(status_code=400, detail={"msg": "Thiếu thông tin cần thực hiện"})
