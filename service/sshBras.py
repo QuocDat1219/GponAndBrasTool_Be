@@ -16,6 +16,8 @@ def phan_loai_command(command, *args):
         return f'sho_pppoe_lockout {args[0]}\n'
     elif command == "check_user_bras":
         return f'sho_sub_acc {args[0]}\n'
+    elif command == "clear_user_bras":
+        return f"clear_user {args[0]}\n"
     elif command == "clear_in_bras":
         return 'clear_lockout\n'
 
