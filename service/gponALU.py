@@ -8,68 +8,67 @@ from fastapi import HTTPException
 # Lấy thông tin đăng nhập gpon
 gpon_username = os.getenv("GPON_ALU_USERNAME")
 gpon_password = os.getenv("GPON_ALU_PASSWORD")
-# gpon_ip = os.getenv("GPON_ALU_IP")
 
 def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlannet):
-        if commands == "sync_password":
-            return ["show pon unprovision-onu"]
-        elif commands == "delete_port":
-            return [
-                f"configure equipment ont interface 1/1/{card}/{port}/{onu} admin-state down",
-                "exit all",
-                f"configure equipment ont no interface 1/1/{card}/{port}/{onu}",
-                "exit all"
-            ]
-        elif commands == "create_dvnet":
-            return [
-                f"configure equipment ont interface 1/1/{card}/{port}/{onu} sw-ver-pland disabled subslocid {slid} fec-up disable sw-dnload-version disabled plnd-var SIP enable-aes enable sn-bundle-ctrl bundle",
-                "exit all",
-                f"configure equipment ont slot 1/1/{card}/{port}/{onu}/14 planned-card-type veip plndnumdataports 1 plndnumvoiceports 0 port-type uni admin-state up",
-                "exit all",
-                f"configure interface port uni:1/1/{card}/{port}/{onu}/14/1 admin-up",
-                "exit all",
-                f"configure bridge port 1/1/{card}/{port}/{onu}/14/1 max-unicast-mac 20",
-                "exit all",
-                f"configure qos interface  1/1/{card}/{port}/{onu}/14/1 upstream-queue 0 bandwidth-profile name:Fiber300M",
-                "exit all",
-                f"configure qos interface  1/1/{card}/{port}/{onu}/14/1 queue 0 shaper-profile name:Fiber300M",
-                "exit all",
-                f"configure bridge port  1/1/{card}/{port}/{onu}/14/1 vlan-id 11 tag single-tagged l2fwder-vlan {vlannet} vlan-scope local",
-                "exit all",
-                f"configure bridge port 1/1/{card}/{port}/{onu}/14/1 vlan-id 4000 tag single-tagged network-vlan 4040 vlan-scope local",
-                "exit all"
-            ]
-        elif commands == "dv_mytv":
-            return [
-                f"configure qos interface 1/1/{card}/{port}/{onu}/14/1 upstream-queue 4 bandwidth-profile name:IPTV_up",
-                "exit all",
-                f"configure qos interface 1/1/{card}/{port}/{onu}/14/1 queue 4 shaper-profile name:IPTV_down_12M",
-                "exit all",
-                f"configure bridge port 1/1/{card}/{port}/{onu}/14/1 vlan-id 12 tag single-tagged network-vlan {vlanmytv} vlan-scope local",
-                "exit all",
-                f"configure bridge port 1/1/{card}/{port}/{onu}/14/1 vlan-id 12 max-unicast-mac 20",
-                "exit all",
-                f"configure igmp channel vlan:1/1/{card}/{port}/{onu}/14/1:12 max-num-group 254",
-                "exit all",
-                f"configure igmp channel vlan:1/1/{card}/{port}/{onu}/14/1:12 mcast-vlan-id 99",
-                "exit all"
-            ]
-        elif commands == "dv_ims":
-            return [
-                f"configure qos interface 1/1/{card}/{port}/{onu}/14/1 queue 5 shaper-profile name:VoIP",
-                f"configure qos interface 1/1/{card}/{port}/{onu}/14/1 upstream-queue 5 bandwidth-profile name:VoIP",
-                f"configure bridge port 1/1/{card}/{port}/{onu}/14/1 vlan-id 13 tag single-tagged l2fwder-vlan {vlanims} vlan-scope local",
-                f"configure bridge port 1/1/{card}/{port}/{onu}/14/1 vlan-id 4000 tag single-tagged l2fwder-vlan 4040 vlan-scope local",
-                "exit all"
-            ]
-        elif commands == "status_port":
-            return [f"show interface port ont:1/1/{card}/{port}/{onu}"]
-        elif commands == "check_capacity":
-            return [f"show equipment ont optics 1/1/{card}/{port}/{onu}"]
-        elif commands == "check_mac":
-            return [f"show vlan bridge-port-fdb 1/1/{card}/{port}/{onu}/14/1"]
-        else:
-            raise HTTPException(status_code=400, detail="Lệnh trên thiết bị này chưa được cập nhật")
+    if commands == "sync_password":
+        return ["show pon unprovision-onu"]
+    elif commands == "delete_port":
+        return [
+            f"configure equipment ont interface 1/1/{card}/{port}/{onu} admin-state down",
+            "exit all",
+            f"configure equipment ont no interface 1/1/{card}/{port}/{onu}",
+            "exit all"
+        ]
+    elif commands == "create_dvnet":
+        return [
+            f"configure equipment ont interface 1/1/{card}/{port}/{onu} sw-ver-pland disabled subslocid {slid} fec-up disable sw-dnload-version disabled plnd-var SIP enable-aes enable sn-bundle-ctrl bundle",
+            "exit all",
+            f"configure equipment ont slot 1/1/{card}/{port}/{onu}/14 planned-card-type veip plndnumdataports 1 plndnumvoiceports 0 port-type uni admin-state up",
+            "exit all",
+            f"configure interface port uni:1/1/{card}/{port}/{onu}/14/1 admin-up",
+            "exit all",
+            f"configure bridge port 1/1/{card}/{port}/{onu}/14/1 max-unicast-mac 20",
+            "exit all",
+            f"configure qos interface  1/1/{card}/{port}/{onu}/14/1 upstream-queue 0 bandwidth-profile name:Fiber300M",
+            "exit all",
+            f"configure qos interface  1/1/{card}/{port}/{onu}/14/1 queue 0 shaper-profile name:Fiber300M",
+            "exit all",
+            f"configure bridge port  1/1/{card}/{port}/{onu}/14/1 vlan-id 11 tag single-tagged l2fwder-vlan {vlannet} vlan-scope local",
+            "exit all",
+            f"configure bridge port 1/1/{card}/{port}/{onu}/14/1 vlan-id 4000 tag single-tagged network-vlan 4040 vlan-scope local",
+            "exit all"
+        ]
+    elif commands == "dv_mytv":
+        return [
+            f"configure qos interface 1/1/{card}/{port}/{onu}/14/1 upstream-queue 4 bandwidth-profile name:IPTV_up",
+            "exit all",
+            f"configure qos interface 1/1/{card}/{port}/{onu}/14/1 queue 4 shaper-profile name:IPTV_down_12M",
+            "exit all",
+            f"configure bridge port 1/1/{card}/{port}/{onu}/14/1 vlan-id 12 tag single-tagged network-vlan {vlanmytv} vlan-scope local",
+            "exit all",
+            f"configure bridge port 1/1/{card}/{port}/{onu}/14/1 vlan-id 12 max-unicast-mac 20",
+            "exit all",
+            f"configure igmp channel vlan:1/1/{card}/{port}/{onu}/14/1:12 max-num-group 254",
+            "exit all",
+            f"configure igmp channel vlan:1/1/{card}/{port}/{onu}/14/1:12 mcast-vlan-id 99",
+            "exit all"
+        ]
+    elif commands == "dv_ims":
+        return [
+            f"configure qos interface 1/1/{card}/{port}/{onu}/14/1 queue 5 shaper-profile name:VoIP",
+            f"configure qos interface 1/1/{card}/{port}/{onu}/14/1 upstream-queue 5 bandwidth-profile name:VoIP",
+            f"configure bridge port 1/1/{card}/{port}/{onu}/14/1 vlan-id 13 tag single-tagged l2fwder-vlan {vlanims} vlan-scope local",
+            f"configure bridge port 1/1/{card}/{port}/{onu}/14/1 vlan-id 4000 tag single-tagged l2fwder-vlan 4040 vlan-scope local",
+            "exit all"
+        ]
+    elif commands == "status_port":
+        return [f"show interface port ont:1/1/{card}/{port}/{onu}"]
+    elif commands == "check_capacity":
+        return [f"show equipment ont optics 1/1/{card}/{port}/{onu}"]
+    elif commands == "check_mac":
+        return [f"show vlan bridge-port-fdb 1/1/{card}/{port}/{onu}/14/1"]
+    else:
+        raise HTTPException(status_code=400, detail="Lệnh trên thiết bị này chưa được cập nhật")
 
 # Hàm thực thi các command cho sync_password
 async def execute_command_for_syncPassword(channel, cmd, is_sync_password=False):
@@ -87,25 +86,21 @@ async def execute_command_for_syncPassword(channel, cmd, is_sync_password=False)
             break
         await asyncio.sleep(0.5)
     
-    # Loại bỏ các ký tự load và thay thế bằng dấu xuống dòng
+    # Loại bỏ các ký tự load
     if is_sync_password:
-        # Loại bỏ các ký tự load "\u001b[1D\\" và thay thế chúng bằng khoảng trắng
-        output = re.sub(r'\\u001b\[1D\\', '', output)
-        # Loại bỏ các ký tự load "\u001b[1D|" và thay thế chúng bằng khoảng trắng
-        output = re.sub(r'\\u001b\[1D\|', '', output)
-        # Loại bỏ các ký tự load "\u001b[1D/" và thay thế chúng bằng khoảng trắng
-        output = re.sub(r'\\u001b\[1D\/', '', output)
-        # Loại bỏ các ký tự load "\u001b[1D-" và thay thế chúng bằng khoảng trắng
-        output = re.sub(r'\\u001b\[1D\-', '', output)
-        # Loại bỏ các ký tự load "\u001b[1D" và thay thế chúng bằng khoảng trắng
-        output = re.sub(r'\\u001b\[1D', '', output)
-        # Loại bỏ các ký tự load "\n-\b\b" và thay thế chúng bằng khoảng trắng
-        output = re.sub(r'\n-\b\b', '', output)
+        loading_patterns = [
+            r'\u001b\[1D\\', r'\u001b\[1D\|', r'\u001b\[1D/', r'\u001b\[1D-', 
+            r'\u001b\[1D', r'\n-\b\b'
+        ]
+        for pattern in loading_patterns:
+            output = re.sub(pattern, '', output)
         
-        # Trả về kết quả đã chỉnh sửa
+        # Giữ lại các dòng chứa ký tự ASCII
+        output_lines = output.split('\n')
+        output = '\n'.join(line for line in output_lines if any(c.isprintable() and ord(c) < 128 for c in line))
+        
         return output.strip()
     
-    # Trả về kết quả không chỉnh sửa
     return output.strip()
 
 # Hàm thực thi các command khác
@@ -137,7 +132,7 @@ async def ssh_bras_gpon_alu_command(ipaddress, commands, card, port, onu, slid, 
         for cmd in command:
             print(cmd)
             if commands == "sync_password":
-                result = await execute_command_for_syncPassword(channel, cmd)
+                result = await execute_command_for_syncPassword(channel, cmd, is_sync_password=True)
             else:
                 result = await execute_command(channel, cmd)
             # Gán các kết quả trả về vào mảng
@@ -147,4 +142,3 @@ async def ssh_bras_gpon_alu_command(ipaddress, commands, card, port, onu, slid, 
         raise http_error
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"error: {str(e)}")
-

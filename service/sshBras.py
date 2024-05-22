@@ -30,11 +30,30 @@ def command_no_param(command):
 def clean_output(output):
     # Loại bỏ các ký tự điều khiển ANSI và những ký tự không mong muốn khác
     ansi_escape = re.compile(r'\x1B[@-_][0-?]*[ -/]*[@-~]')
+    unwanted_patterns = [
+        r'Welcome to Ubuntu.*',
+        r'\* Documentation:.*',
+        r'\* Management:.*',
+        r'\* Support:.*',
+        r'Expanded Security Maintenance.*',
+        r'\d+ updates can be applied immediately.*',
+        r'To see these additional updates.*',
+        r'\d+ additional security updates.*',
+        r'Learn more about enabling ESM Apps.*',
+        r'New release .+ available.*',
+        r'Run .+ to upgrade to it.*',
+        r'Your Hardware Enablement Stack.*',
+        r'\*\*\* System restart required \*\*\*',
+        r'Last login: .*'
+    ]
+
     cleaned_output = ansi_escape.sub('', output)
+    lines = cleaned_output.split('\n')
+    cleaned_lines = [line for line in lines if not any(re.match(pattern, line) for pattern in unwanted_patterns)]
+    
     # Thêm ký tự ngắt dòng cho mỗi dòng
-    cleaned_output = cleaned_output.replace('\r', '').split('\n')
-    cleaned_output = [line + '\r\n' for line in cleaned_output]
-    return cleaned_output
+    cleaned_lines = [line + '\n' for line in cleaned_lines if line.strip() != '']
+    return cleaned_lines
 
 def ssh_bras_command_with_mac(command, mac):
     try:
