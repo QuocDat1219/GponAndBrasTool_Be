@@ -33,22 +33,22 @@ async def ssh_gpon(data: dict):  # Thêm đối số mặc định cho websocket
         raise HTTPException(status_code=500, detail={"msg": "Chưa chọn loại thiết bị"})
     
 @controlDeviceRoutes.post('/api/bras/control')
-def ssh_bras(data: dict):
+async def ssh_bras(data: dict):
     
     command = data["command"]
     
     if "mac" not in data and "username_bras" not in data:
-        return ssh_bras_command(command)
+        return await ssh_bras_command(command)
     elif "mac" in data:
         mac = data["mac"]
-        return ssh_bras_command_with_mac(command, mac)
+        return await ssh_bras_command_with_mac(command, mac)
     elif "username_bras" in data:
         username = data["username_bras"]
         
         if(command == "clear_user_bras"):
-            return clear_user_bras(command,username)
+            return await clear_user_bras(command,username)
         else:
-            return ssh_bras_command_with_username(command, username)
+            return await ssh_bras_command_with_username(command, username)
     else:
         raise HTTPException(status_code=400, detail={"msg": "Thiếu thông tin cần thực hiện"})
 

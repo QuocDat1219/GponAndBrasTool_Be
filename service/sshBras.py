@@ -1,6 +1,7 @@
 import paramiko
 import os
 import re
+import asyncio
 from fastapi import HTTPException
 
 # Lấy thông tin đăng nhập bras
@@ -55,7 +56,7 @@ def clean_output(output):
     cleaned_lines = [line + '\n' for line in cleaned_lines if line.strip() != '']
     return cleaned_lines
 
-def ssh_bras_command_with_mac(command, mac):
+async def ssh_bras_command_with_mac(command, mac):
     try:
         session = paramiko.SSHClient()
         session.load_system_host_keys()
@@ -75,26 +76,26 @@ def ssh_bras_command_with_mac(command, mac):
         raise HTTPException(status_code=500, detail=f"error: {str(e)}")
     
 
-def ssh_bras_command_with_username(command, username_bras):
+async def ssh_bras_command_with_username(command, username_bras):
     try:
-        session = paramiko.SSHClient()
-        session.load_system_host_keys()
-        session.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        session.connect(hostname_bras, username=user_bras, password=password_bras)
+        # session = paramiko.SSHClient()
+        # session.load_system_host_keys()
+        # session.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        # session.connect(hostname_bras, username=user_bras, password=password_bras)
         if len(username_bras) <= 0:
             raise HTTPException(status_code=500, detail=f"Chưa nhập username")
         else:
             cmd = commad_with_param(command, username_bras)
             print(cmd)
-            return execute_ssh_command(session, cmd)
+            #return await execute_ssh_command(session, cmd)
     
     except HTTPException as http_error:
-        raise http_error  # Ném lại HTTPException để FastAPI xử lý
+        raise http_error
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"error: {str(e)}")
     
-def ssh_bras_command(command):
+async def ssh_bras_command(command):
     try:
         session = paramiko.SSHClient()
         session.load_system_host_keys()
@@ -111,14 +112,16 @@ def ssh_bras_command(command):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"error: {str(e)}")
 
-def execute_ssh_command(session, cmd):
+async def execute_ssh_command(session, cmd):
     try:
         ssh_channel = session.invoke_shell()
         ssh_channel.send(cmd)
+        await asyncio.sleep(0.5)
         
         output = ''
         while not output.endswith('~$ '):
             output += ssh_channel.recv(1024).decode()
+            await asyncio.sleep(0.5)
         
         cleaned_output = clean_output(output)
         print(cleaned_output)
@@ -126,12 +129,12 @@ def execute_ssh_command(session, cmd):
         ssh_channel.send("exit\n")
         session.close()
         
-        return HTTPException(status_code=200, detail={"msg": "success", "data": cleaned_output})
+        return {"msg": "success", "data": cleaned_output}
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"error: {str(e)}")
     
-def clear_user_bras(command, username_bras):
+async def clear_user_bras(command, username_bras):
     if not command or not username_bras:
         raise HTTPException(status_code=400, detail="Thiếu command hoặc user trong request body")
     
@@ -140,7 +143,7 @@ def clear_user_bras(command, username_bras):
     
     for user in users_list:
         user = user.strip()
-        result = ssh_bras_command_with_username(command, user)
+        result = await ssh_bras_command_with_username(command, user)
         results.append(result)
     
     return {"results": results}
