@@ -41,6 +41,7 @@ async def ssh_bras(data: dict):
         return await ssh_bras_command(command)
     elif "mac" in data:
         mac = data["mac"]
+        print(mac)
         return await ssh_bras_command_with_mac(command, mac)
     elif "username_bras" in data:
         username = data["username_bras"]
