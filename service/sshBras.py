@@ -130,3 +130,17 @@ def execute_ssh_command(session, cmd):
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"error: {str(e)}")
+    
+def clear_user_bras(command, username_bras):
+    if not command or not username_bras:
+        raise HTTPException(status_code=400, detail="Thiếu command hoặc user trong request body")
+    
+    users_list = username_bras.strip('[]').split(',')
+    results = []
+    
+    for user in users_list:
+        user = user.strip()
+        result = ssh_bras_command_with_username(command, user)
+        results.append(result)
+    
+    return {"results": results}
