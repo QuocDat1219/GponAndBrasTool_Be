@@ -67,7 +67,10 @@ async def ssh_bras_command_with_mac(command, mac):
         else:
             cmd = commad_with_param(command, mac)
             print(cmd)
-            return await execute_ssh_command(session, cmd)
+            response = await execute_ssh_command(session, cmd)
+            if response["status_code"] != 200:
+                raise HTTPException(status_code=response["status_code"], detail=response["result"]["data"])
+            return response["result"]
     
     except HTTPException as http_error:
         raise http_error  # Ném lại HTTPException để FastAPI xử lý
@@ -76,6 +79,28 @@ async def ssh_bras_command_with_mac(command, mac):
         raise HTTPException(status_code=500, detail=f"error: {str(e)}")
     
 
+async def execute_ssh_command(session, cmd):
+    try:
+        ssh_channel = session.invoke_shell()
+        ssh_channel.send(cmd)
+        await asyncio.sleep(0.5)
+        
+        output = ''
+        while not output.endswith('~$ '):
+            output += ssh_channel.recv(1024).decode()
+            await asyncio.sleep(0.5)
+        
+        cleaned_output = clean_output(output)
+        print(cleaned_output)
+        
+        ssh_channel.send("exit\n")
+        session.close()
+        
+        return {"status_code": 200, "result": {"msg": "success", "data": cleaned_output}}
+    
+    except Exception as e:
+        return {"status_code": 500, "result": {"msg": "error", "data": str(e)}}
+
 async def ssh_bras_command_with_username(command, username_bras):
     try:
         session = paramiko.SSHClient()
@@ -83,18 +108,21 @@ async def ssh_bras_command_with_username(command, username_bras):
         session.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         session.connect(hostname_bras, username=user_bras, password=password_bras)
         if len(username_bras) <= 0:
-            raise HTTPException(status_code=500, detail=f"Chưa nhập username")
+            raise HTTPException(status_code=400, detail="Chưa nhập username")
         else:
             cmd = commad_with_param(command, username_bras)
             print(cmd)
-            return await execute_ssh_command(session, cmd)
+            response = await execute_ssh_command(session, cmd)
+            if response["status_code"] != 200:
+                raise HTTPException(status_code=response["status_code"], detail=response["result"]["data"])
+            return response["result"]
     
     except HTTPException as http_error:
         raise http_error
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"error: {str(e)}")
-    
+
 async def ssh_bras_command(command):
     try:
         session = paramiko.SSHClient()
@@ -104,8 +132,12 @@ async def ssh_bras_command(command):
        
         cmd = command_no_param(command)
         print(cmd)
-        #Gọi hàm thực thi command
-        return await execute_ssh_command(session, cmd) 
+        # Gọi hàm thực thi command
+        response = await execute_ssh_command(session, cmd)
+        if response["status_code"] != 200:
+            raise HTTPException(status_code=response["status_code"], detail=response["result"]["data"])
+        return response["result"]
+    
     except HTTPException as http_error:
         raise http_error  # Ném lại HTTPException để FastAPI xử lý
     
@@ -129,22 +161,26 @@ async def execute_ssh_command(session, cmd):
         ssh_channel.send("exit\n")
         session.close()
         
-        return {"msg": "success", "data": cleaned_output}
+        return {"status_code": 200, "result": {"msg": "success", "data": cleaned_output}}
     
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"error: {str(e)}")
+        return {"status_code": 500, "result": {"msg": "error", "data": str(e)}}
     
-async def clear_user_bras(command, usernmae_bras):
-    if not command or not usernmae_bras:
+async def clear_user_bras(command, username_bras):
+    if not command or not username_bras:
         raise HTTPException(status_code=400, detail="Thiếu command hoặc user trong request body")
     
-    users_list = usernmae_bras.strip('[]').split(',')
+    users_list = username_bras.strip('[]').split(',')
     results_data = []
     
-    #Xử lý kết quả trả về sau mối lệnh và gôm về 1 mảng
+    # Xử lý kết quả trả về sau mỗi lệnh và gộp vào 1 mảng
     for user in users_list:
         user = user.strip()
         result = await ssh_bras_command_with_username(command, user)
-        results_data.append(result["data"])
+        print(result)
+        if result["msg"] == "success":
+            results_data.append(result["data"])
+        else:
+            raise HTTPException(status_code=500, detail=result["data"])
     
     return {"msg": "success", "data": results_data}
