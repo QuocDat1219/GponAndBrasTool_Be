@@ -1,14 +1,14 @@
 import asyncio
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from service.gponZTE import ssh_bras_gpon_zte_command
 from service.gponMiniZTE import ssh_bras_gpon_mini_zte_command
 from service.gponHW import ssh_bras_gpon_hw_command
 from service.gponALU import ssh_bras_gpon_alu_command
 from service.sshBras import ssh_bras_command_with_mac, ssh_bras_command_with_username, ssh_bras_command, clear_user_bras
-
+from auth.jwt_bearer import jwtBearer
 controlDeviceRoutes = APIRouter()
                
-@controlDeviceRoutes.post('/api/gpon/control')
+@controlDeviceRoutes.post('/api/gpon/control',dependencies=[Depends(jwtBearer())])
 async def ssh_gpon(data: dict):  # Thêm đối số mặc định cho websocket
     loai_thiet_bi = data["device_types"]
     ipaddress = data["ipaddress"]
@@ -32,7 +32,7 @@ async def ssh_gpon(data: dict):  # Thêm đối số mặc định cho websocket
     else:
         raise HTTPException(status_code=500, detail={"msg": "Chưa chọn loại thiết bị"})
     
-@controlDeviceRoutes.post('/api/bras/control')
+@controlDeviceRoutes.post('/api/bras/control',dependencies=[Depends(jwtBearer())])
 async def ssh_bras(data: dict):
     
     command = data["command"]

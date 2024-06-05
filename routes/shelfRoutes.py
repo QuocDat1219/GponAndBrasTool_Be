@@ -1,12 +1,13 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from models.shelfDeviceModel import Shelf
 from config.db import conn
 from schemas.shelfDeviceSchemas import serializeDict, serializeList
 from bson import ObjectId
+from auth.jwt_bearer import jwtBearer
 
 shelfRoutes = APIRouter()
 
-@shelfRoutes.post("/api/shelf/")
+@shelfRoutes.post("/api/shelf/",dependencies=[Depends(jwtBearer())])
 async def create_shelf(shelf: Shelf):
     try:
         created_shelf = conn.demo.shelf.insert_one(dict(shelf))
@@ -18,7 +19,7 @@ async def create_shelf(shelf: Shelf):
         return HTTPException(status_code=500, detail={"msg": "error"})
 
 
-@shelfRoutes.get("/api/shelf/")
+@shelfRoutes.get("/api/shelf/",dependencies=[Depends(jwtBearer())])
 async def get_all_shelf():
     try:
         all_shelf = serializeList(conn.demo.shelf.find())
@@ -27,7 +28,7 @@ async def get_all_shelf():
         return HTTPException(status_code=500, detail={"msg": "error"})
     
     
-@shelfRoutes.get("/api/shelf/{id}")
+@shelfRoutes.get("/api/shelf/{id}",dependencies=[Depends(jwtBearer())])
 async def get_shelf_by_id(id):
     try:
         shelf = serializeDict(conn.demo.shelf.find_one({"_id": ObjectId(id)}))
@@ -35,7 +36,7 @@ async def get_shelf_by_id(id):
     except:
         return HTTPException(status_code=500, detail={"msg": "error"})
         
-@shelfRoutes.put("/api/shelf/{id}")
+@shelfRoutes.put("/api/shelf/{id}",dependencies=[Depends(jwtBearer())])
 async def update_shelf(id, shelf:Shelf):
     try:
         conn.demo.shelf.find_one_and_update(
@@ -50,7 +51,7 @@ async def update_shelf(id, shelf:Shelf):
     except:
         return HTTPException(status_code=500, detail={"msg": "error"}) 
 
-@shelfRoutes.delete("/api/shelf/{id}")
+@shelfRoutes.delete("/api/shelf/{id}",dependencies=[Depends(jwtBearer())])
 async def delete_shelf(id):
     try:
         deleted_shelf = conn.demo.shelf.delete_one({"_id": ObjectId(id)})

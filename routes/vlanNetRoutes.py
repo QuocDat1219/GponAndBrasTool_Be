@@ -1,12 +1,12 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from models.vlanNetModel import VlanNet
 from config.db import conn
 from schemas.vlanNetSchemas import serializeDict,serializeList
 from bson import ObjectId
-
+from auth.jwt_bearer import jwtBearer
 vlanNetRoutes = APIRouter()
 
-@vlanNetRoutes.post("/api/vlannet/")
+@vlanNetRoutes.post("/api/vlannet/",dependencies=[Depends(jwtBearer())])
 async def create_vlanNet(vlanNet: VlanNet):
     try:
         created_vlanNet = conn.demo.vlanNet.insert_one(dict(vlanNet))
@@ -18,7 +18,7 @@ async def create_vlanNet(vlanNet: VlanNet):
         return HTTPException(status_code=500, detail={"msg": "error"})
 
 
-@vlanNetRoutes.get("/api/vlannet/")
+@vlanNetRoutes.get("/api/vlannet/",dependencies=[Depends(jwtBearer())])
 async def get_all_vlanNet():
     try:
         all_vlanNet = serializeList(conn.demo.vlanNet.find())
@@ -27,7 +27,7 @@ async def get_all_vlanNet():
         return HTTPException(status_code=500, detail={"msg": "error"})
     
     
-@vlanNetRoutes.get("/api/vlannet/{id}")
+@vlanNetRoutes.get("/api/vlannet/{id}",dependencies=[Depends(jwtBearer())])
 async def get_vlanNet_by_id(id):
     try:
         vlanNet = serializeDict(conn.demo.vlanNet.find_one({"_id": ObjectId(id)}))
@@ -35,7 +35,7 @@ async def get_vlanNet_by_id(id):
     except:
         return HTTPException(status_code=500, detail={"msg": "error"})
         
-@vlanNetRoutes.put("/api/vlannet/{id}")
+@vlanNetRoutes.put("/api/vlannet/{id}",dependencies=[Depends(jwtBearer())])
 async def update_vlanNet(id, vlanNet: VlanNet):
     try:
         conn.demo.vlanNet.find_one_and_update(
@@ -50,7 +50,7 @@ async def update_vlanNet(id, vlanNet: VlanNet):
     except:
         return HTTPException(status_code=500, detail={"msg": "error"}) 
 
-@vlanNetRoutes.delete("/api/vlannet/{id}")
+@vlanNetRoutes.delete("/api/vlannet/{id}",dependencies=[Depends(jwtBearer())])
 async def delete_vlanNet(id):
     try:
         deleted_vlanNet = conn.demo.vlanNet.delete_one({"_id": ObjectId(id)})

@@ -10,6 +10,7 @@ from routes.vlanMytvRoutes import vlanMytvRoutes
 from routes.vlanImsRoutes import vlanImsRoutes
 from routes.thietbiRoutes import thietbiRoutes
 from routes.controlDeviceRoutes import controlDeviceRoutes
+from routes.userRoutes import userRoutes
 
 app = FastAPI()
 
@@ -30,6 +31,7 @@ app.include_router(vlanNetRoutes)
 app.include_router(vlanMytvRoutes)
 app.include_router(vlanImsRoutes)
 app.include_router(controlDeviceRoutes)
+app.include_router(userRoutes)
 
 # Tạo SocketManager
 manager = SocketManager(app)

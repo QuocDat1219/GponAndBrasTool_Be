@@ -1,13 +1,14 @@
-from fastapi import APIRouter, HTTPException, WebSocket
+from fastapi import APIRouter, HTTPException, Depends
 from models.ipAddressModel import IpAddress
 from config.db import conn
 from schemas.ipAddressSchemas import serializeDict, serializeList
 from bson import ObjectId
+from auth.jwt_bearer import jwtBearer
 ipAddressRoutes = APIRouter()
     
 # Tạo mới địa chỉ ip kết nối bras
 
-@ipAddressRoutes.post('/api/ipaddress/')
+@ipAddressRoutes.post('/api/ipaddress/',dependencies=[Depends(jwtBearer())])
 async def create_ip_address(ipAddress:IpAddress):
     try:
         createdIp = conn.demo.ipaddress.insert_one(dict(ipAddress))
@@ -19,17 +20,17 @@ async def create_ip_address(ipAddress:IpAddress):
         return HTTPException(status_code=500,detail={ "msg" : f"error"})
 # Lấy danh sách ip address
 
-@ipAddressRoutes.get('/api/ipaddress/')
+@ipAddressRoutes.get('/api/ipaddress/',dependencies=[Depends(jwtBearer())])
 async def get_all_ip_addresses():
     allIp = serializeList(conn.demo.ipaddress.find())
     return allIp
 
-@ipAddressRoutes.get("/api/ipddress/{id}")
+@ipAddressRoutes.get("/api/ipddress/{id}",dependencies=[Depends(jwtBearer())])
 async def get_ip_address(id):
     ipAddress = serializeDict(conn.demo.ipaddress.find_one({"_id": ObjectId(id)}))
     return ipAddress
 
-@ipAddressRoutes.delete('/api/ipaddress/{id}')
+@ipAddressRoutes.delete('/api/ipaddress/{id}',dependencies=[Depends(jwtBearer())])
 async def delete_ip_address(id):
     try:
         deleted_id = conn.demo.ipaddress.delete_one({"_id": ObjectId(id)})
@@ -40,7 +41,7 @@ async def delete_ip_address(id):
     except:
         return HTTPException(status_code = 500, detail={ "msg" : f"error"})
 
-@ipAddressRoutes.put("/api/ipaddress/{id}")
+@ipAddressRoutes.put("/api/ipaddress/{id}",dependencies=[Depends(jwtBearer())])
 async def update_ip_address(id, ipAddress: IpAddress):
     try:
         conn.demo.ipaddress.find_one_and_update(
