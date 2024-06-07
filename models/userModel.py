@@ -1,7 +1,7 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, Field
 
 class User(BaseModel):
     fullname : str
-    email: EmailStr
+    username: str
     password : str  
     role: str = Field(default="user")

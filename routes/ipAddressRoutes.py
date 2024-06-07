@@ -11,9 +11,9 @@ ipAddressRoutes = APIRouter()
 @ipAddressRoutes.post('/api/ipaddress/',dependencies=[Depends(jwtBearer())])
 async def create_ip_address(ipAddress:IpAddress):
     try:
-        createdIp = conn.demo.ipaddress.insert_one(dict(ipAddress))
+        createdIp = conn.gponbrastool.ipaddress.insert_one(dict(ipAddress))
         if createdIp:
-            return HTTPException(status_code=200, detail={ "msg" : f"success", "data": serializeList(conn.demo.ipaddress.find())})
+            return HTTPException(status_code=200, detail={ "msg" : f"success", "data": serializeList(conn.gponbrastool.ipaddress.find())})
         else:
             return HTTPException(status_code=500, detail={ "msg" : f"error"})
     except:
@@ -22,20 +22,20 @@ async def create_ip_address(ipAddress:IpAddress):
 
 @ipAddressRoutes.get('/api/ipaddress/',dependencies=[Depends(jwtBearer())])
 async def get_all_ip_addresses():
-    allIp = serializeList(conn.demo.ipaddress.find())
+    allIp = serializeList(conn.gponbrastool.ipaddress.find())
     return allIp
 
 @ipAddressRoutes.get("/api/ipddress/{id}",dependencies=[Depends(jwtBearer())])
 async def get_ip_address(id):
-    ipAddress = serializeDict(conn.demo.ipaddress.find_one({"_id": ObjectId(id)}))
+    ipAddress = serializeDict(conn.gponbrastool.ipaddress.find_one({"_id": ObjectId(id)}))
     return ipAddress
 
 @ipAddressRoutes.delete('/api/ipaddress/{id}',dependencies=[Depends(jwtBearer())])
 async def delete_ip_address(id):
     try:
-        deleted_id = conn.demo.ipaddress.delete_one({"_id": ObjectId(id)})
+        deleted_id = conn.gponbrastool.ipaddress.delete_one({"_id": ObjectId(id)})
         if deleted_id.deleted_count == 1:
-            return HTTPException(status_code = 200, detail={ "msg" : f"success", "data": serializeList(conn.demo.ipaddress.find())})
+            return HTTPException(status_code = 200, detail={ "msg" : f"success", "data": serializeList(conn.gponbrastool.ipaddress.find())})
         else:
             return HTTPException(status_code = 500,detail={ "msg" : f"error"})
     except:
@@ -44,13 +44,13 @@ async def delete_ip_address(id):
 @ipAddressRoutes.put("/api/ipaddress/{id}",dependencies=[Depends(jwtBearer())])
 async def update_ip_address(id, ipAddress: IpAddress):
     try:
-        conn.demo.ipaddress.find_one_and_update(
+        conn.gponbrastool.ipaddress.find_one_and_update(
             {"_id": ObjectId(id)},
             {"$set": dict(ipAddress)}
         )
-        updatedIpAddress = conn.demo.ipaddress.find_one({"_id": ObjectId(id)})
+        updatedIpAddress = conn.gponbrastool.ipaddress.find_one({"_id": ObjectId(id)})
         if updatedIpAddress:
-            return HTTPException(status_code=200, detail={ "msg" : f"success", "data": serializeList(conn.demo.ipaddress.find())})
+            return HTTPException(status_code=200, detail={ "msg" : f"success", "data": serializeList(conn.gponbrastool.ipaddress.find())})
         else:
             return HTTPException(status_code=500,detail={ "msg" : f"error"})
     except:

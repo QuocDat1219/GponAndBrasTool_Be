@@ -10,9 +10,9 @@ vlanMytvRoutes = APIRouter()
 @vlanMytvRoutes.post("/api/vlanmytv/",dependencies=[Depends(jwtBearer())])
 async def create_vlanMytv(vlanMytv: VlanMytv):
     try:
-        created_vlanMytv = conn.demo.vlanmytv.insert_one(dict(vlanMytv))
+        created_vlanMytv = conn.gponbrastool.vlanmytv.insert_one(dict(vlanMytv))
         if created_vlanMytv:
-            return HTTPException(status_code=200, detail={"msg": "success", "data": serializeList(conn.demo.vlanmytv.find())})
+            return HTTPException(status_code=200, detail={"msg": "success", "data": serializeList(conn.gponbrastool.vlanmytv.find())})
         else:
             return HTTPException(status_code=500, detail={"msg": "error"})
     except:
@@ -22,7 +22,7 @@ async def create_vlanMytv(vlanMytv: VlanMytv):
 @vlanMytvRoutes.get("/api/vlanmytv/",dependencies=[Depends(jwtBearer())])
 async def get_all_vlanMytv():
     try:
-        all_vlanMytv = serializeList(conn.demo.vlanmytv.find())
+        all_vlanMytv = serializeList(conn.gponbrastool.vlanmytv.find())
         return all_vlanMytv
     except:
         return HTTPException(status_code=500, detail={"msg": "error"})
@@ -31,7 +31,7 @@ async def get_all_vlanMytv():
 @vlanMytvRoutes.get("/api/vlanmytv/{id}",dependencies=[Depends(jwtBearer())])
 async def get_vlanMytv_by_id(id):
     try:
-        vlanMytv = serializeDict(conn.demo.vlanmytv.find_one({"_id": ObjectId(id)}))
+        vlanMytv = serializeDict(conn.gponbrastool.vlanmytv.find_one({"_id": ObjectId(id)}))
         return vlanMytv
     except:
         return HTTPException(status_code=500, detail={"msg": "error"})
@@ -39,14 +39,14 @@ async def get_vlanMytv_by_id(id):
 @vlanMytvRoutes.put("/api/vlanmytv/{id}",dependencies=[Depends(jwtBearer())])
 async def update_vlanMytv(id, vlanMytv: VlanMytv):
     try:
-        conn.demo.vlanmytv.find_one_and_update(
+        conn.gponbrastool.vlanmytv.find_one_and_update(
             {"_id": ObjectId(id)},
             {"$set": dict(vlanMytv)}
         )
-        updated_vlanMytv = serializeDict(conn.demo.vlanmytv.find_one({"_id": ObjectId(id)}))
+        updated_vlanMytv = serializeDict(conn.gponbrastool.vlanmytv.find_one({"_id": ObjectId(id)}))
        
         if updated_vlanMytv:
-            return HTTPException(status_code=200, detail={"msg": "success", "data": serializeList(conn.demo.vlanmytv.find())})
+            return HTTPException(status_code=200, detail={"msg": "success", "data": serializeList(conn.gponbrastool.vlanmytv.find())})
         else:
             return HTTPException(status_code=500, detail={"msg": "error"})
     except:
@@ -55,9 +55,9 @@ async def update_vlanMytv(id, vlanMytv: VlanMytv):
 @vlanMytvRoutes.delete("/api/vlanmytv/{id}",dependencies=[Depends(jwtBearer())])
 async def delete_vlanMytv(id):
     try:
-        deleted_vlanMytv = conn.demo.vlanmytv.delete_one({"_id": ObjectId(id)})
+        deleted_vlanMytv = conn.gponbrastool.vlanmytv.delete_one({"_id": ObjectId(id)})
         if deleted_vlanMytv.deleted_count > 0:
-           return HTTPException(status_code=200, detail={"msg": "success", "data": serializeList(conn.demo.vlanmytv.find())})
+           return HTTPException(status_code=200, detail={"msg": "success", "data": serializeList(conn.gponbrastool.vlanmytv.find())})
         else:
            return HTTPException(status_code=500, detail={"msg": "error"})
     except:

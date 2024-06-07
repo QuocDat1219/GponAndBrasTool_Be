@@ -2,7 +2,7 @@ def userEntity(item) -> dict:
     return {
         "id": str(item['_id']),
         "fullname": item['fullname'],
-        "email": item['email'],
+        "username": item['username'],
         "password": item['password'],
         "role": item['role'],
     }

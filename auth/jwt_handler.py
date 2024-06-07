@@ -11,12 +11,12 @@ def token_response(token: str):
         "access_token": token
     }
 
-def signJWT(userID: str, fullName: str, role: str, email: str):
+def signJWT(userID: str, fullName: str, role: str, username: str):
     payload = {
         "user_id": userID,
         "fullname": fullName,
         "role": role,
-        "email": email,
+        "username": username,
         "expires": time.time() + 86400
     }
     token = jwt.encode(payload, JWT_SECRET, algorithm=JSWT_ALGORITHM)

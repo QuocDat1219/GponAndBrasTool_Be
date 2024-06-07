@@ -1,0 +1,14 @@
+uvicorn
+gunicorn
+telnetlib3
+paramiko
+fastapi
+requests
+requests_toolbelt
+passlib
+pymongo
+fastapi_socketio
+python-dotenv
+python-decouple
+PyJWT
+bs4
