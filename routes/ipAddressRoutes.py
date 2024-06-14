@@ -32,8 +32,8 @@ async def get_ip_address(id):
 
 # Tìm kiếm gần đúng
 @ipAddressRoutes.get("/api/ipaddress/find", dependencies=[Depends(jwtBearer())])
-async def find_ip_address(keyword: str = Query(..., description="Ip cần tìm")):
-    ipAddresses = serializeList(conn.gponbrastool.ipaddress.find({"ipaddress": {"$regex": keyword, "$options": "i"}}))
+async def find_ip_address(ip: str = Query(..., description="Ip cần tìm")):
+    ipAddresses = serializeList(conn.gponbrastool.ipaddress.find({"ipaddress": {"$regex": ip, "$options": "i"}}))
     return ipAddresses
 
 @ipAddressRoutes.delete('/api/ipaddress/{id}',dependencies=[Depends(jwtBearer())])
