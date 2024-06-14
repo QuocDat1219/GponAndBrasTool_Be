@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Query
 from models.ipAddressModel import IpAddress
 from config.db import conn
 from schemas.ipAddressSchemas import serializeDict, serializeList
@@ -29,6 +29,12 @@ async def get_all_ip_addresses():
 async def get_ip_address(id):
     ipAddress = serializeDict(conn.gponbrastool.ipaddress.find_one({"_id": ObjectId(id)}))
     return ipAddress
+
+# Tìm kiếm gần đúng
+@ipAddressRoutes.get("/api/ipaddress/find", dependencies=[Depends(jwtBearer())])
+async def find_ip_address(keyword: str = Query(..., description="Ip cần tìm")):
+    ipAddresses = serializeList(conn.gponbrastool.ipaddress.find({"ipaddress": {"$regex": keyword, "$options": "i"}}))
+    return ipAddresses
 
 @ipAddressRoutes.delete('/api/ipaddress/{id}',dependencies=[Depends(jwtBearer())])
 async def delete_ip_address(id):
