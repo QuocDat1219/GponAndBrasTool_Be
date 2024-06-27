@@ -68,7 +68,7 @@ async def clear_and_update_sheet(service, data_list, sheet_name, sheet_id):
         
         if sheet_exists:
             # Xóa dữ liệu trong sheet nếu sheet tồn tại
-            service.spreadsheets().values().clear(spreadsheetId=sheet_id, range=f"{sheet_name}!A1:AG1000").execute()
+            service.spreadsheets().values().clear(spreadsheetId=sheet_id, range=f"{sheet_name}!A1:AH1000").execute()
         else:
             # Tạo sheet mới nếu sheet không tồn tại
             requests = [{
