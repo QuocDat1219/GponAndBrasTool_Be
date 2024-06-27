@@ -27,8 +27,11 @@ async def get_all_ip_addresses():
 
 @ipAddressRoutes.get("/api/ipddress/{id}",dependencies=[Depends(jwtBearer())])
 async def get_ip_address(id):
-    ipAddress = serializeDict(conn.gponbrastool.ipaddress.find_one({"_id": ObjectId(id)}))
-    return ipAddress
+    ipAddress = conn.gponbrastool.ipaddress.find_one({"_id": ObjectId(id)})
+    if ipAddress:
+        return serializeDict(ipAddress)
+    else:
+        return HTTPException(status_code=500,detail={ "msg" : f"Không tìm thấy dữ liệu"})
 
 # Tìm kiếm gần đúng
 @ipAddressRoutes.get("/api/ipaddress/find", dependencies=[Depends(jwtBearer())])
