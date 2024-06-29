@@ -31,7 +31,10 @@ async def get_all_vlanNet():
 async def get_vlanNet_by_id(id):
     try:
         vlanNet = serializeDict(conn.gponbrastool.vlanNet.find_one({"_id": ObjectId(id)}))
-        return vlanNet
+        if vlanNet:
+            return serializeDict(vlanNet)
+        else:
+            return HTTPException(status_code=500, detail={"msg": "Không tìm thấy vlannet"})
     except:
         return HTTPException(status_code=500, detail={"msg": "error"})
         

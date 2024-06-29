@@ -31,8 +31,11 @@ async def get_all_vlanMytv():
 @vlanMytvRoutes.get("/api/vlanmytv/{id}",dependencies=[Depends(jwtBearer())])
 async def get_vlanMytv_by_id(id):
     try:
-        vlanMytv = serializeDict(conn.gponbrastool.vlanmytv.find_one({"_id": ObjectId(id)}))
-        return vlanMytv
+        vlanMytv = conn.gponbrastool.vlanmytv.find_one({"_id": ObjectId(id)})
+        if vlanMytv:
+            return serializeDict(vlanMytv)
+        else:
+            return HTTPException(status_code=500, detail={"msg": "Không tìm thấy vlanMyTv"})
     except:
         return HTTPException(status_code=500, detail={"msg": "error"})
         

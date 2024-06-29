@@ -30,8 +30,11 @@ async def get_all_vlanIms():
 @vlanImsRoutes.get("/api/vlanims/{id}",dependencies=[Depends(jwtBearer())])
 async def get_vlanIms_by_id(id):
     try:
-        vlanIms = serializeDict(conn.gponbrastool.vlanims.find_one({"_id": ObjectId(id)}))
-        return vlanIms
+        vlanIms = conn.gponbrastool.vlanims.find_one({"_id": ObjectId(id)})
+        if vlanIms:
+            return serializeDict(vlanIms)
+        else:
+            return HTTPException(status_code=500, detail= {"msg": "Không tìm thấy vlanims"})
     except:
         return HTTPException(status_code=500, detail={"msg": "error"})
         

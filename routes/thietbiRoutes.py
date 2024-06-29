@@ -61,10 +61,16 @@ async def get_all_thietbi():
     
 @thietbiRoutes.get("/api/thietbi/id/{id}",dependencies=[Depends(jwtBearer())])
 async def get_thietbi_by_id(id):
-    thietbi = serializeDict(conn.gponbrastool.thietbi.find_one({"_id": ObjectId(id)}))
-    print(thietbi)
-    return thietbi
-
+    try:
+        thietbi = conn.gponbrastool.thietbi.find_one({"_id": ObjectId(id)})
+        if thietbi:
+            return serializeDict(thietbi)
+        else:
+            return HTTPException(status_code=500, detail={"msg": "Không tìm thấy thiết bị"}) 
+    except:
+           return HTTPException(status_code=500, detail={"msg": "error"}) 
+       
+       
 @thietbiRoutes.put("/api/thietbi/{id}",dependencies=[Depends(jwtBearer())])
 async def update_thietbi(id, thietbi: ThietBi):
     try:

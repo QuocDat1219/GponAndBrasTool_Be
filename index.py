@@ -13,7 +13,7 @@ from routes.controlDeviceRoutes import controlDeviceRoutes
 from routes.userRoutes import userRoutes
 from routes.visaRoutes import visaRoutes
 from routes.ctsRoutes import ctsRouter
-
+from routes.googleSheetsRoutes import googleSheetRouter
 app = FastAPI()
 
 # Middleware CORS
@@ -36,6 +36,7 @@ app.include_router(controlDeviceRoutes)
 app.include_router(userRoutes)
 app.include_router(visaRoutes)
 app.include_router(ctsRouter)
+app.include_router(googleSheetRouter)
 
 # Tạo SocketManager
 manager = SocketManager(app)
