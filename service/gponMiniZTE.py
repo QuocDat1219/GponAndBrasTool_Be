@@ -8,12 +8,11 @@ from fastapi import HTTPException
 gpon_username = os.getenv("MINIZTE_USERNAME")
 gpon_password = os.getenv("MINIZTE_PASSWORD")
 
-print(gpon_username)
-print(gpon_password)
-
 def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlannet):
         if commands == "sync_password":
-            return ["show pon onu un"]
+            return [
+                "show pon onu un"
+                ]
         elif commands == "delete_port":
             return [
                 "configure t",
@@ -96,6 +95,7 @@ async def execute_command(channel, cmd):
     return output
 
 async def ssh_bras_gpon_mini_zte_command(ipaddress, commands, card, port, onu, slid, vlanims, vlanmytv, vlannet):
+    print(commands) 
     try:
         session = paramiko.SSHClient()
         session.load_system_host_keys()
@@ -122,4 +122,5 @@ async def ssh_bras_gpon_mini_zte_command(ipaddress, commands, card, port, onu, s
     except HTTPException as http_error:
         raise http_error
     except Exception as e:
+        print(e)
         raise HTTPException(status_code=500, detail=f"error: {str(e)}")

@@ -130,7 +130,6 @@ async def ssh_bras_gpon_alu_command(ipaddress, commands, card, port, onu, slid, 
         results = []
         # Chạy lần lượt từng command
         for cmd in command:
-            print(cmd)
             if commands == "sync_password":
                 result = await execute_command_for_syncPassword(channel, cmd, is_sync_password=True)
             else:
