@@ -5,6 +5,7 @@ from service.gponMiniZTE import ssh_bras_gpon_mini_zte_command
 from service.gponHW import ssh_bras_gpon_hw_command
 from service.gponALU import ssh_bras_gpon_alu_command
 from service.sshBras import ssh_bras_command_with_mac, ssh_bras_command_with_username, ssh_bras_command, clear_user_bras
+from service.gponMiniHW import ssh_bras_gpon_minihw_command
 from auth.jwt_bearer import jwtBearer
 controlDeviceRoutes = APIRouter()
                
@@ -26,9 +27,14 @@ async def ssh_gpon(data: dict):  # Thêm đối số mặc định cho websocket
     elif loai_thiet_bi == "GPON MINI ZTE":
         return await ssh_bras_gpon_mini_zte_command(ipaddress, commands, card, port, onu, slid, vlanims, vlanmytv, vlannet)
     elif loai_thiet_bi == "GPON HW":
-        return await ssh_bras_gpon_hw_command(ipaddress, commands, card, port, onu, slid, vlanims, vlanmytv, vlannet)
+        service_portnet = data["service_portnet"]
+        service_portgnms = data["service_portgnms"]
+        service_portims = data["service_portims"]
+        return await ssh_bras_gpon_hw_command(ipaddress, commands, card, port, onu, slid, vlanims, vlanmytv, vlannet, service_portnet, service_portgnms,service_portims)
     elif loai_thiet_bi == "GPON ALU":
         return await ssh_bras_gpon_alu_command(ipaddress, commands, card, port, onu, slid, vlanims, vlanmytv, vlannet)
+    elif loai_thiet_bi == "GPON MINI HW":
+        return await ssh_bras_gpon_minihw_command(ipaddress, commands, card, port, onu, slid, vlanims, vlanmytv, vlannet)
     else:
         raise HTTPException(status_code=500, detail={"msg": "Chưa chọn loại thiết bị"})
     

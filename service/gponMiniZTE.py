@@ -26,21 +26,27 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
                 f"onu {onu} type GW040 pw {slid}",
                 "exit",
                 f"interface gpon_onu-1/3/{port}:{onu}",
-                # "sn-bind disable",
                 "vport-mode manual",
                 "tcont 1 name HSI profile T4_300M",
                 "gemport 1 name HSI tcont 1",
                 "vport 1 map-type vlan",
                 "vport-map 1 1 vlan 11",
+                "tcont 6 name GNMS profile Fiber300M",
+                "gemport 6 name GNMS tcont 6",
+                "vport 1 map-type vlan",
+                "vport-map 1 6 vlan 4000",
                 "exit",
                 f"interface vport-1/3/{port}.{onu}:1",
                 f"service-port 1 user-vlan 11 vlan {vlannet}",
                 f"service-port 1 user-vlan 11 vlan  {vlannet} egress Fiber300M",
+                "service-port 6 user-vlan 4000 vlan 4040 egress Fiber300M",
                 "exit",
                 f"pon-onu-mng gpon_onu-1/3/{port}:{onu}",
                 "service 1 gemport 1 vlan 11",
                 "wan 1 service internet host 1",
-                "wan-ip ipv4 mode pppoe vlan-profile HSI host 1"
+                "wan-ip ipv4 mode pppoe vlan-profile HSI host 1",
+                "service 6 gemport 6 vlan 4000",
+                "exit"
             ]
         elif commands == "dv_mytv":
             return [
@@ -85,6 +91,13 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
             return [f"show pon power attenuation gpon_onu-1/3/{port}:{onu}"]
         elif commands == "check_mac":
             return [f"show mac interface gpon_onu-1/3/{port}:{onu}"]
+        elif commands == "change_sync_password":
+            return ["configure terminal"
+                f"interface  gpon_onu-1/3/{port}:{onu}"
+                "sn-bind disable"
+                f"auth-id pw {slid}"
+                "end"
+            ]
         else:
             raise HTTPException(status_code=400, detail="Lệnh trên thiết bị này chưa được cập nhật")
 

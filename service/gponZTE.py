@@ -87,6 +87,13 @@ def phan_loai_command(command, card, port, onu, slid, vlanims, vlanmytv, vlannet
         return [f"show pon power attenuation gpon-onu_1/{card}/{port}:{onu}"]
     elif command == "check_mac":
         return [f"show mac gpon  onu  gpon-onu_1/{card}/{port}:{onu}"]
+    elif command == "change_sync_password":
+        return ["configure  terminal",
+                f"interface  gpon-onu_1/{card}/{port}:{onu}",
+                "sn-bind disable",
+                f"registration-method pw {slid}",
+                "end"
+                ]
     else:
         raise HTTPException(status_code=400, detail="Lệnh trên thiết bị này chưa được cập nhật")
     

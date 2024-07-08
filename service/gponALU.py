@@ -67,6 +67,14 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
         return [f"show equipment ont optics 1/1/{card}/{port}/{onu}"]
     elif commands == "check_mac":
         return [f"show vlan bridge-port-fdb 1/1/{card}/{port}/{onu}/14/1"]
+    elif commands == "change_sync_password":
+        return [f"configure equipment ont interface 1/1/{card}/{port}/{onu}",
+            f"configure equipment ont interface 1/1/{card}/{port}/{onu} admin-state  down",
+            f"configure equipment ont interface 1/1/{card}/{port}/{onu}D no sernum",
+            f"configure equipment ont interface 1/1/{card}/{port}/{onu} subslocid SLID",
+            f"configure equipment ont interface 1/1/{card}/{port}/{onu} admin-state  up",
+            "exit all" 
+        ]
     else:
         raise HTTPException(status_code=400, detail="Lệnh trên thiết bị này chưa được cập nhật")
 
