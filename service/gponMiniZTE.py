@@ -17,7 +17,7 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
             return [
                 "configure t",
                 f"interface gpon_olt-1/3/{port}",
-                f"no onu {port}"
+                f"no onu {onu}"
             ]
         elif commands == "create_dvnet":
             return [
