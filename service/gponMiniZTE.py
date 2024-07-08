@@ -17,13 +17,13 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
             return [
                 "configure t",
                 f"interface gpon_olt-1/3/{port}",
-                f"no onu {port}"
+                f"no onu {onu}"
             ]
         elif commands == "create_dvnet":
             return [
                 "configure t",
                 f"interface gpon_olt-1/3/{port}",
-                f"onu {onu} type GW040 pw 0100000001",
+                f"onu {onu} type GW040 pw {slid}",
                 "exit",
                 f"interface gpon_onu-1/3/{port}:{onu}",
                 # "sn-bind disable",

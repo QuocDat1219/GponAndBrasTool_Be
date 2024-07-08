@@ -54,5 +54,5 @@ async def disconnect(sid):
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host='0.0.0.0', port=int(os.getenv('PORT')))
+    uvicorn.run(app, host='0.0.0.0', port=int(os.getenv('PORT')), reload=True)
 

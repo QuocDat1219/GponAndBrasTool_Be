@@ -16,7 +16,7 @@ async def ssh_gpon(data: dict):  # Thêm đối số mặc định cho websocket
     card = int(data["card"])
     port = int(data["port"])
     onu = int(data["onu"])
-    slid = int(data["slid"])
+    slid = str(data["slid"])
     vlanims = int(data["vlanims"])
     vlanmytv = int(data["vlanmytv"])
     vlannet = int(data["vlannet"])
