@@ -70,8 +70,8 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
     elif commands == "change_sync_password":
         return [f"configure equipment ont interface 1/1/{card}/{port}/{onu}",
             f"configure equipment ont interface 1/1/{card}/{port}/{onu} admin-state  down",
-            f"configure equipment ont interface 1/1/{card}/{port}/{onu}D no sernum",
-            f"configure equipment ont interface 1/1/{card}/{port}/{onu} subslocid SLID",
+            f"configure equipment ont interface 1/1/{card}/{port}/{onu} no sernum",
+            f"configure equipment ont interface 1/1/{card}/{port}/{onu} subslocid {slid}",
             f"configure equipment ont interface 1/1/{card}/{port}/{onu} admin-state  up",
             "exit all" 
         ]

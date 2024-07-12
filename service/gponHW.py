@@ -51,13 +51,33 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
                 f"ont  modify {port} {onu} password {slid}",
                 "quit"
         ]
+    elif commands == "check_service_port":
+        return [
+            f"display service-port port 0/{card}/{port} ont {onu}"
+        ]
     else:
         raise HTTPException(status_code=400, detail={"error": "Chức năng trên thiết bị này chưa được cập nhật"})
+    
 async def execute_command(channel, cmd):
     channel.send(cmd + '\n')
-    await asyncio.sleep(0.5)
+    await asyncio.sleep(1)
     output = channel.recv(65535).decode().strip()
-    return output
+    final_output = output
+
+    # Kiểm tra nếu kết quả trả về chứa '{ <cr>||<K> }' thì gửi thêm một lần enter
+    if '{ <cr>||<K> }' in output or '{ <cr>|gemport<K> }:' in output or '{ <cr>|e2e<K>|gemport<K>|sort-by<K> }' in output:
+        channel.send('\n')
+        await asyncio.sleep(1)
+        output = channel.recv(65535).decode().strip()
+        final_output += output
+    
+        # Kiểm tra nếu kết quả trả về chứa '---- More ( Press 'Q' to break ) ----' thì gửi 'q' cho đến khi không còn thông báo này
+    while '---- More ( Press \'Q\' to break ) ----' in output:
+        channel.send(' ')
+        await asyncio.sleep(0.5)
+        output = channel.recv(65535).decode().strip()
+        final_output += output
+    return final_output
 
 async def ssh_bras_gpon_hw_command(ipaddress, commands, card, port, onu, slid, vlanims, vlanmytv, vlannet, service_portnet, service_portgnms, service_portims):
     print(commands) 
@@ -83,6 +103,7 @@ async def ssh_bras_gpon_hw_command(ipaddress, commands, card, port, onu, slid, v
             print(cmd)
             result = await execute_command(channel, cmd)
             results.append(result)
+        session.close()
         return HTTPException(status_code=200, detail= results)
     except HTTPException as http_error:
         raise http_error

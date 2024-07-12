@@ -6,15 +6,17 @@ from fastapi import HTTPException
 
 
 # Lấy thông tin đăng nhập gpon
-gpon_username = os.getenv("GPON_HW_USERNAME")
-gpon_password = os.getenv("GPON_HW_PASSWORD")
+gpon_username = os.getenv("GPON_MINI_HW_USERNAME")
+gpon_password = os.getenv("GPON_MINI_HW_PASSWORD")
 
+print(gpon_username)
+print(gpon_password)
 
 def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlannet):
     if commands == "sync_password":
         return ["display ont autofind all"]
     elif commands == "view_info_onu":
-        return [f"display ont inf 0 {card} {port} {onu}"]
+        return [f"display ont info 0 {card} {port} {onu}"]
     elif commands == "delete_port":
         return [
             "config",
@@ -37,7 +39,7 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
         serviceport_ims = port * 64 + onu + 512
         return [
                 "config",
-                f"service-port {serviceport_ims} vlan VLANIMS gpon 0/1/port ont onuID gemport 3 multi-service user-vlan 13 tag-transform translate inbound traffic-table name VOIP outbound traffic-table name VOIP",
+                f"service-port {serviceport_ims} vlan {vlanims} gpon 0/1/{port} ont {onu} gemport 3 multi-service user-vlan 13 tag-transform translate inbound traffic-table name VOIP outbound traffic-table name VOIP",
         ]
     elif commands == "dv_mytv":
         serviceport = port * 64 + onu + 1536
@@ -61,16 +63,38 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
                 f"ont  modify {port} {onu} password {slid}",
                 "quit"
         ]
+    elif commands == "check_service_port":
+        return [
+            f"display service-port port 0/{card}/{port} ont {onu}"
+        ]
     else:
         raise HTTPException(status_code=400, detail={"error": "Chức năng trên thiết bị này chưa được cập nhật"})
+    
+
 async def execute_command(channel, cmd):
     channel.send(cmd + '\n')
-    await asyncio.sleep(0.5)
+    await asyncio.sleep(1)
     output = channel.recv(65535).decode().strip()
-    return output
+    final_output = output
+
+    # Kiểm tra nếu kết quả trả về chứa '{ <cr>||<K> }' thì gửi thêm một lần enter
+    if '{ <cr>||<K> }' in output or '{ <cr>|gemport<K> }:' in output or '{ <cr>|desc<K>|fiber-route<K>|ont-type<K> }:' in output or '{ <cr>|globalleave<K>|igmp-ipv6-version<K>|log<K>|max-bandwidth<K>|max-program<K>|quickleave<K>|video<K> }' or '{ <cr>|dedicated-net-id<K> }' in output:
+        channel.send('\n')
+        await asyncio.sleep(1)
+        output = channel.recv(65535).decode().strip()
+        final_output += output
+
+    # Kiểm tra nếu kết quả trả về chứa '---- More ( Press 'Q' to break ) ----' thì gửi 'q' cho đến khi không còn thông báo này
+    while '---- More ( Press \'Q\' to break ) ----' in output:
+        channel.send(' ')
+        await asyncio.sleep(0.5)
+        output = channel.recv(65535).decode().strip()
+        final_output += output
+
+
+    return final_output
 
 async def ssh_bras_gpon_minihw_command(ipaddress, commands, card, port, onu, slid, vlanims, vlanmytv, vlannet):
-    print(commands) 
     try:
         session = paramiko.SSHClient()
         session.load_system_host_keys()
@@ -88,14 +112,15 @@ async def ssh_bras_gpon_minihw_command(ipaddress, commands, card, port, onu, sli
         # Nhận kết quả trả về từ hàm phân loại chức năng sẽ thực hiện
         command = phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlannet)
         results = []
+        
         # Chạy lần lượt từng command
         for cmd in command:
             print(cmd)
             result = await execute_command(channel, cmd)
             results.append(result)
+        session.close()
         return HTTPException(status_code=200, detail= results)
-    except HTTPException as http_error:
-        raise http_error
+        
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail=f"error: {str(e)}")
