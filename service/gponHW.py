@@ -71,12 +71,18 @@ async def execute_command(channel, cmd):
         output = channel.recv(65535).decode().strip()
         final_output += output
     
-        # Kiểm tra nếu kết quả trả về chứa '---- More ( Press 'Q' to break ) ----' thì gửi 'q' cho đến khi không còn thông báo này
-    while '---- More ( Press \'Q\' to break ) ----' in output:
+  # Kiểm tra nếu kết quả trả về chứa '---- More ( Press \'Q\' to break ) ----'
+    if '---- More ( Press \'Q\' to break ) ----' in output:
         channel.send(' ')
         await asyncio.sleep(0.5)
         output = channel.recv(65535).decode().strip()
         final_output += output
+
+        channel.send('q')
+        await asyncio.sleep(0.5)
+        output = channel.recv(65535).decode().strip()
+        final_output += output
+
     return final_output
 
 async def ssh_bras_gpon_hw_command(ipaddress, commands, card, port, onu, slid, vlanims, vlanmytv, vlannet, service_portnet, service_portgnms, service_portims):
