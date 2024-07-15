@@ -54,7 +54,7 @@ def phan_loai_command(command, card, port, onu, slid, vlanims, vlanmytv, vlannet
             f"service-port 2 vport 2 user-vlan 12 vlan {vlanmytv}",
             "exit",
             f"igmp mvlan 99 receive-port gpon-onu_1/{card}/{port}:{onu} vport 2",
-            f"pon-onu-mng gpon-onu_1/{card}/{port}:{onu}", #HỎI LẠI XEM CÁI NÀY LÀ CÁI GÌ
+            f"pon-onu-mng gpon-onu_1/{card}/{port}:{onu}",
             "service 2 gemport 2 vlan 12",
             "vlan port eth_0/4 mode tag vlan 12",
             "vlan port wifi_0/2 mode tag vlan 12",
@@ -98,34 +98,34 @@ def phan_loai_command(command, card, port, onu, slid, vlanims, vlanmytv, vlannet
         raise HTTPException(status_code=400, detail="Lệnh trên thiết bị này chưa được cập nhật")
     
 #Tạo hàm để thực hiện việc trả kết quả khi thực hiện lệnh chạy ở luồng khác   
-   
 async def execute_command(reader, writer, cmd):
-    writer.write((cmd + '\n').encode('ascii'))
+    writer.write(cmd.encode('ascii') + b'\n')
     await writer.drain()
-    await asyncio.sleep(0.5)
-    output = (await reader.read(65535)).decode('latin-1').strip()
-    return output
+    await asyncio.sleep(0.7)
+    output = await reader.read(65535)
+    return cmd + '\n' + output.decode('latin-1').strip()
 
 async def ssh_bras_gpon_zte_command(ipaddress, commands, card, port, onu, slid, vlanims, vlanmytv, vlannet):
     try:
         reader, writer = await asyncio.open_connection(ipaddress, 23)
 
         # Xác thực với tên người dùng và mật khẩu
-        writer.write((gpon_username + '\n').encode('ascii'))
+        writer.write(gpon_username.encode('ascii') + b'\n')
         await writer.drain()
         await asyncio.sleep(1)
-        writer.write((gpon_password + '\n').encode('ascii'))
+        writer.write(gpon_password.encode('ascii') + b'\n')
         await writer.drain()
         await asyncio.sleep(1)
 
         # Thực thi các lệnh
         results = []
         for cmd in phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlannet):
+            print(cmd)
             result = await execute_command(reader, writer, cmd)
             results.append(result)
         
         writer.close()
-        await writer.wait_closed()
         return HTTPException(status_code=200, detail=results)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"error: {str(e)}")
+

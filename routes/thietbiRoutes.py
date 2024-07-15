@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends
 from models.thietbi import ThietBi
 from config.db import conn
-from schemas.thietbiSchemas import serializeDict, serializeList
+from schemas.thietbiSchemas import serializeDict, serializeList, serializeVlannet, serializeThietBiByIp
 from bson import ObjectId
 from auth.jwt_bearer import jwtBearer
 
@@ -30,6 +30,19 @@ async def get_thietbi_by_loai_thiet_bi(loaithietbi: str):
     except Exception as e:
         
         raise HTTPException(status_code=500, detail=str(e))
+    
+
+#Get thiet bi theo ip thiet bi
+@thietbiRoutes.get("/api/thietbi/ip/{ipaddress}", dependencies=[Depends(jwtBearer())])
+async def get_thietbi_by_ip(ipaddress: str):
+    # try:
+        # Sử dụng hàm serializeThietBiByIp để tìm và serialize thiết bị
+        serialized_list = serializeThietBiByIp(ipaddress)
+        if not serialized_list:
+            raise HTTPException(status_code=404, detail="Thiết bị không tìm thấy")
+        return serialized_list
+    # except Exception as e:
+    #     raise HTTPException(status_code=500, detail=str(e))
 
 # Get thiet bi theo systemid
 @thietbiRoutes.get("/api/thietbi/tenthietbi/{tenthietbi}",dependencies=[Depends(jwtBearer())])
@@ -45,6 +58,18 @@ async def get_thietbi_by_ten_thiet_bi(tenthietbi: str):
         
         raise HTTPException(status_code=500, detail=str(e))
 
+@thietbiRoutes.get("/api/thietbi/find/vlannet/{tenthietbi}",dependencies=[Depends(jwtBearer())])
+async def get_vlannet_by_ten_thiet_bi(tenthietbi: str):
+    try:
+        # Tìm kiếm tất cả các thiết bị có loại thiết bị là loaithietbi
+        thietbi_list = list(conn.gponbrastool.thietbi.find({"tenthietbi": tenthietbi}))
+        print(thietbi_list)
+        if not thietbi_list:
+            return []
+        return serializeVlannet(thietbi_list)
+    except Exception as e:
+        
+        raise HTTPException(status_code=500, detail=str(e))
 
 @thietbiRoutes.get("/api/thietbi/",dependencies=[Depends(jwtBearer())])
 async def get_all_thietbi():
