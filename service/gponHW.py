@@ -34,12 +34,8 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
                 "quit"
         ]
     elif commands == "dv_ims":
-        return [
-             "config",
-                f"interface gpon 0/{card}",
-                f"ont add {port} {onu} password-auth \"{slid}\" always-on omci ont-lineprofile-id 300 ont-srvprofile-id 300 desc \"noname\"",
-                "quit",
-                f"service-port {service_portims} vlan {vlanims} gpon 0/{card}/{port} ont {onu} gemport 3 multi-service user-vlan 13 tag-transform translate inbound traffic-table index 300 outbound  traffic-table index 300",
+        return ["config",
+                f"service-port {service_portims} vlan {vlanims} gpon 0/{card}/{port} ont {onu} gemport 3 multi-service user-vlan 13 tag-transform translate inbound traffic-table index 300 outbound traffic-table index 300",
         ]    
     elif commands == "check_mac":
         return [f"display  mac-address  port 0/{card}/{port} ont {onu}"]
