@@ -11,13 +11,16 @@ gpon_password = os.getenv("GPON_ALU_PASSWORD")
 
 def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlannet):
     if commands == "sync_password":
-        return ["show pon unprovision-onu"]
+        return ["show pon unprovision-onu",
+                "exit all",
+                ]
     elif commands == "delete_port":
         return [
             f"configure equipment ont interface 1/1/{card}/{port}/{onu} admin-state down",
             "exit all",
             f"configure equipment ont no interface 1/1/{card}/{port}/{onu}",
-            "exit all"
+            "exit all",
+            "logout"
         ]
     elif commands == "create_dvnet":
         return [
@@ -36,7 +39,8 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
             f"configure bridge port  1/1/{card}/{port}/{onu}/14/1 vlan-id 11 tag single-tagged l2fwder-vlan {vlannet} vlan-scope local",
             "exit all",
             f"configure bridge port 1/1/{card}/{port}/{onu}/14/1 vlan-id 4000 tag single-tagged network-vlan 4040 vlan-scope local",
-            "exit all"
+            "exit all",
+            "logout"
         ]
     elif commands == "dv_mytv":
         return [
@@ -51,7 +55,8 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
             f"configure igmp channel vlan:1/1/{card}/{port}/{onu}/14/1:12 max-num-group 254",
             "exit all",
             f"configure igmp channel vlan:1/1/{card}/{port}/{onu}/14/1:12 mcast-vlan-id 99",
-            "exit all"
+            "exit all",
+            "logout"
         ]
     elif commands == "dv_ims":
         return [
@@ -59,21 +64,32 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
             f"configure qos interface 1/1/{card}/{port}/{onu}/14/1 upstream-queue 5 bandwidth-profile name:VoIP",
             f"configure bridge port 1/1/{card}/{port}/{onu}/14/1 vlan-id 13 tag single-tagged l2fwder-vlan {vlanims} vlan-scope local",
             f"configure bridge port 1/1/{card}/{port}/{onu}/14/1 vlan-id 4000 tag single-tagged l2fwder-vlan 4040 vlan-scope local",
-            "exit all"
+            "exit all",
+            "logout"
         ]
     elif commands == "status_port":
-        return [f"show interface port ont:1/1/{card}/{port}/{onu}"]
+        return [f"show interface port ont:1/1/{card}/{port}/{onu}",
+                "exit all",
+                "logout"
+                ]
     elif commands == "check_capacity":
-        return [f"show equipment ont optics 1/1/{card}/{port}/{onu}"]
+        return [f"show equipment ont optics 1/1/{card}/{port}/{onu}",
+                "exit all",
+                "logout"
+                ]
     elif commands == "check_mac":
-        return [f"show vlan bridge-port-fdb 1/1/{card}/{port}/{onu}/14/1"]
+        return [f"show vlan bridge-port-fdb 1/1/{card}/{port}/{onu}/14/1",
+                "exit all",
+                "logout"
+                ]
     elif commands == "change_sync_password":
         return [f"configure equipment ont interface 1/1/{card}/{port}/{onu}",
             f"configure equipment ont interface 1/1/{card}/{port}/{onu} admin-state  down",
             f"configure equipment ont interface 1/1/{card}/{port}/{onu} no sernum",
             f"configure equipment ont interface 1/1/{card}/{port}/{onu} subslocid {slid}",
             f"configure equipment ont interface 1/1/{card}/{port}/{onu} admin-state  up",
-            "exit all" 
+            "exit all",
+            "logout"
         ]
     else:
         raise HTTPException(status_code=400, detail="Lệnh trên thiết bị này chưa được cập nhật")

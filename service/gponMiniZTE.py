@@ -11,13 +11,17 @@ gpon_password = os.getenv("MINIZTE_PASSWORD")
 def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlannet):
     if commands == "sync_password":
         return [
-            "show pon onu un"
+            "show pon onu un",
+            "exit"
         ]
     elif commands == "delete_port":
         return [
             "configure t",
             f"interface gpon_olt-1/3/{port}",
-            f"no onu {onu}"
+            f"no onu {onu}",
+            "exit",
+            "exit",
+            "exit"
         ]
     elif commands == "create_dvnet":
         return [
@@ -46,6 +50,8 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
             "wan 1 service internet host 1",
             "wan-ip ipv4 mode pppoe vlan-profile HSI host 1",
             "service 6 gemport 6 vlan 4000",
+            "exit",
+            "exit",
             "exit"
         ]
     elif commands == "dv_mytv":
@@ -67,7 +73,10 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
             "mvlan 12",
             "exit",
             "igmp mvlan 99",
-            f"receive-port vport-1/3/{port}.{onu}:1"
+            f"receive-port vport-1/3/{port}.{onu}:1",
+            "exit",
+            "exit",
+            "exit"
         ]
     elif commands == "dv_ims":
         return [
@@ -85,18 +94,26 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
             "exit",
             f"pon-onu-mng gpon_onu-1/3/{port}:{onu}",
             "service 3 gemport 3 vlan 13",
-            "voip protocol sip"
+            "voip protocol sip",
+            "exit",
+            "exit",
+            "exit"
         ]
     elif commands == "check_capacity":
-        return [f"show pon power attenuation gpon_onu-1/3/{port}:{onu}"]
+        return [f"show pon power attenuation gpon_onu-1/3/{port}:{onu}",
+                "exit"]
     elif commands == "check_mac":
-        return [f"show mac interface gpon_onu-1/3/{port}:{onu}"]
+        return [f"show mac interface gpon_onu-1/3/{port}:{onu}",
+                "exit"]
     elif commands == "change_sync_password":
         return ["configure terminal",
             f"interface  gpon_onu-1/3/{port}:{onu}",
             "sn-bind disable",
             f"auth-id pw {slid}",
-            "end"
+            "end",
+            "exit",
+            "exit",
+            "exit"
         ]
     else:
         raise HTTPException(status_code=400, detail="Lệnh trên thiết bị này chưa được cập nhật")

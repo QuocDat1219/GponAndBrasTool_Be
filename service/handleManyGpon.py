@@ -23,7 +23,7 @@ async def controlManygpon(loai_thiet_bi, ipaddress, commands, card, port, onu, s
                 result = await ssh_bras_gpon_minihw_command(ipaddress, command, card, port, onu, slid, vlanims, vlanmytv, vlannet)
             elif loai_thiet_bi == "GPON ZTE":
                 result = await ssh_bras_gpon_zte_command(ipaddress, command, card, port, onu, slid, vlanims, vlanmytv, vlannet)
-            elif loai_thiet_bi == "GPON Mini ZTE":
+            elif loai_thiet_bi == "GPON MINI ZTE":
                 result = await ssh_bras_gpon_mini_zte_command(ipaddress, command, card, port, onu, slid, vlanims, vlanmytv, vlannet)
             else:
                 raise HTTPException(status_code=400, detail="Thiết bị này không được hỗ trợ")

@@ -12,9 +12,15 @@ gpon_password = os.getenv("GPON_HW_PASSWORD")
 
 def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlannet, service_portnet, service_portgnms,service_portims):
     if commands == "sync_password":
-        return ["display ont autofind all"]
+        return ["display ont autofind all",
+                "quit",
+                "y"
+                ]
     elif commands == "view_info_onu":
-        return [f"display ont inf 0 {card} {port} {onu}"]
+        return [f"display ont inf 0 {card} {port} {onu}",
+                "quit",
+                "y"
+                ]
     elif commands == "delete_port":
         return [
             "config",
@@ -22,6 +28,10 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
             "y",
             f"interface gpon 0/{card}",
             f"ont delete {port} {onu}"
+            "quit",
+            "quit",
+            "quit",
+            "y"
         ]
     elif commands == "create_dvnet":
         return [
@@ -31,25 +41,41 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
                 "quit",
                 f"service-port {service_portnet} vlan {vlannet} gpon 0/{card}/{port} ont {onu} gemport 1 multi-service user-vlan  11 tag-transform translate inbound traffic-table index 300 outbound traffic-table index 300",
                 f"service-port {service_portgnms} vlan 4040 gpon 0/{card}/{port} ont {onu} gemport 5 multi-service user-vlan 4000 tag-transform translate inbound traffic-table index 300 outbound traffic-table index 300",
-                "quit"
+                "quit",
+                "quit",
+                "y"
         ]
     elif commands == "dv_ims":
         return ["config",
                 f"service-port {service_portims} vlan {vlanims} gpon 0/{card}/{port} ont {onu} gemport 3 multi-service user-vlan 13 tag-transform translate inbound traffic-table index 300 outbound traffic-table index 300",
+                "quit",
+                "quit",
+                "y"
         ]    
     elif commands == "check_mac":
-        return [f"display  mac-address  port 0/{card}/{port} ont {onu}"]
+        return [f"display  mac-address  port 0/{card}/{port} ont {onu}",
+                "quit",
+                "y"
+                ]
     elif commands == "check_service":
-        return [f"display  service-port port 0/{card}/{port} ont {onu}"]
+        return [f"display  service-port port 0/{card}/{port} ont {onu}",
+                "quit",
+                "y"
+                ]
     elif commands == "change_sync_password":
         return ["Config",
                 "interface  gpon 0/0",
                 f"ont  modify {port} {onu} password {slid}",
-                "quit"
+                "quit",
+                "quit",
+                "quit",
+                "y"
         ]
     elif commands == "check_service_port":
         return [
-            f"display service-port port 0/{card}/{port} ont {onu}"
+            f"display service-port port 0/{card}/{port} ont {onu}",
+            "quit",
+            "y"
         ]
     else:
         raise HTTPException(status_code=400, detail={"error": "Chức năng trên thiết bị này chưa được cập nhật"})
@@ -79,6 +105,16 @@ async def execute_command(channel, cmd):
         output = channel.recv(65535).decode().strip()
         final_output += output
 
+    channel.send('quit\n')
+    await asyncio.sleep(0.5)
+    output = channel.recv(65535).decode().strip()
+    final_output += output
+
+    channel.send('y\n')
+    await asyncio.sleep(0.5)
+    output = channel.recv(65535).decode().strip()
+    final_output += output
+    
     return final_output
 
 async def ssh_bras_gpon_hw_command(ipaddress, commands, card, port, onu, slid, vlanims, vlanmytv, vlannet, service_portnet, service_portgnms, service_portims):
