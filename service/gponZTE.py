@@ -114,6 +114,15 @@ def phan_loai_command(command, card, port, onu, slid, vlanims, vlanmytv, vlannet
                 "exit",
                 "exit"
                 ]
+    elif command == "change_sync_password_list":
+        return ["configure terminal",
+            f"interface  gpon_onu-1/3/{port}:{onu}",
+            "sn-bind disable",
+            f"auth-id pw {slid}",
+            "end",
+            "exit",
+            "exit",
+        ]
     else:
         raise HTTPException(status_code=400, detail="Lệnh trên thiết bị này chưa được cập nhật")
     
@@ -212,6 +221,7 @@ async def control_gpon_zte(ipaddress, listconfig):
                 results.append(result)
         
         # Đóng phiên SSH
+        channel.send("exit\n")
         channel.close()
         transport.close()
 

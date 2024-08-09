@@ -91,6 +91,14 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
             "exit all",
             "logout"
         ]
+    elif commands == "change_sync_password_list":
+        return [f"configure equipment ont interface 1/1/{card}/{port}/{onu}",
+            f"configure equipment ont interface 1/1/{card}/{port}/{onu} admin-state  down",
+            f"configure equipment ont interface 1/1/{card}/{port}/{onu} no sernum",
+            f"configure equipment ont interface 1/1/{card}/{port}/{onu} subslocid {slid}",
+            f"configure equipment ont interface 1/1/{card}/{port}/{onu} admin-state  up",
+            "exit all",
+        ]
     else:
         raise HTTPException(status_code=400, detail="Lệnh trên thiết bị này chưa được cập nhật")
 

@@ -89,6 +89,14 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
                 "quit",
                 "y"
         ]
+    elif commands == "change_sync_password_list":
+        return ["Config",
+                "interface  gpon 0/0",
+                f"ont  modify {port} {onu} password {slid}",
+                "quit",
+                "quit",
+
+        ]
     elif commands == "check_service_port":
         return [
             f"display service-port port 0/{card}/{port} ont {onu}",
@@ -211,7 +219,9 @@ async def control_gpon_minihw(ipaddress, listconfig):
                 results.append(result)
 
         # Đóng phiên SSH
-        channel.send('logout\n')
+        channel.send("quit\n")
+        channel.send("quit\n")
+        channel.send("y\n")
         channel.close()
         session.close()
 
