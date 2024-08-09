@@ -168,3 +168,57 @@ async def ssh_bras_gpon_minihw_command(ipaddress, commands, card, port, onu, sli
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail=f"error: {str(e)}")
+
+
+
+async def control_gpon_minihw(ipaddress, listconfig):
+    try:
+        session = paramiko.SSHClient()
+        session.load_system_host_keys()
+        session.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        session.connect(ipaddress, username=gpon_username, password=gpon_password, timeout=10)
+        
+        # Tạo kênh SSH
+        channel = session.invoke_shell()
+        # Nhận dữ liệu đầu ra ban đầu từ kênh
+        output = channel.recv(65535).decode('utf-8')
+        # Xác minh rằng bạn đang ở chế độ "enable"
+        if '#' not in output:
+            channel.send('enable\n')
+            await asyncio.sleep(1)
+            output = channel.recv(65535).decode('utf-8')
+        
+        results = []
+
+        # Duyệt qua từng cấu hình trong listconfig
+        for config in listconfig:
+            commands = config["commands"]
+            card = config["newcard"]
+            port = config["newport"]
+            onu = config["newonu"]
+            slid = config["slid"]  # Lấy giá trị slid nếu có
+            vlanims = config.get("vlanims", 0)
+            vlanmytv = config.get("vlanmytv", 0)
+            vlannet = config.get("vlannet", 0)
+            print(vlanims)
+
+            # Lấy các lệnh dựa trên loại lệnh
+            command_list = phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlannet)
+            
+            # Thực hiện từng lệnh và lưu kết quả
+            for cmd in command_list:
+                result = await execute_command(channel, cmd)
+                results.append(result)
+
+        # Đóng phiên SSH
+        channel.send('logout\n')
+        channel.close()
+        session.close()
+
+        # Trả về kết quả
+        return HTTPException(status_code=200, detail=results)
+    
+    except HTTPException as http_error:
+        raise http_error
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"error: {str(e)}")

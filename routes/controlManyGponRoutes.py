@@ -1,25 +1,32 @@
 import asyncio
 from fastapi import APIRouter, HTTPException, Depends
 from auth.jwt_bearer import jwtBearer
-from service.handleManyGpon import controlManygpon
+from service.gponALU import control_gpon_alu
+from service.gponHW import control_gpon_hw
+from service.gponMiniHW import control_gpon_minihw
+from service.gponZTE import control_gpon_zte
+from service.gponMiniZTE import control_gpon_minizte
 
 controlManyGponRouter = APIRouter()
 
 @controlManyGponRouter.post('/api/gpon/control_many')
 async def controlGpon(data: dict):
-    loai_thiet_bi = data["device_types"]
+    loai_thiet_bi = data["deviceType"]
     ipaddress = data["ipaddress"]
-    command_list = (data['commands'])  # Chuyển đổi chuỗi biểu diễn của list thành list thực
-    card = int(data["card"])
-    port = int(data["port"])
-    onu = int(data["onu"])
-    slid = str(data["slid"])
-    vlanims = int(data["vlanims"])
-    vlanmytv = int(data["vlanmytv"])
-    vlannet = int(data["vlannet"])
-    
-    if loai_thiet_bi and ipaddress and command_list:
-        results = await controlManygpon(loai_thiet_bi, ipaddress, command_list, card, port, onu, slid, vlanims, vlanmytv, vlannet)
-        return {"status_code": 200, "detail": results}
+    listconfig = (data['listconfig'])  # Chuyển đổi chuỗi biểu diễn của list thành list thực
+   
+    if loai_thiet_bi and ipaddress and listconfig:
+        if loai_thiet_bi == "GPON ALU":
+            return await control_gpon_alu(ipaddress, listconfig)
+        elif loai_thiet_bi == "GPON HW":
+           return await control_gpon_hw(ipaddress, listconfig)
+        elif loai_thiet_bi == "GPON MINI HW":
+           return await control_gpon_minihw(ipaddress, listconfig)
+        elif loai_thiet_bi == "GPON ZTE":
+            return await control_gpon_zte(ipaddress, listconfig)
+        elif loai_thiet_bi == "GPON MINI ZTE":
+            return await control_gpon_minizte(ipaddress, listconfig)
+        else:
+            raise HTTPException(status_code=400, detail="Thiết bị này không được hỗ trợ")
     else:
         raise HTTPException(status_code=400, detail="Thiếu các tham số cần thiết")

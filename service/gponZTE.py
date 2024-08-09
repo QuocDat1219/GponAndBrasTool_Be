@@ -167,3 +167,60 @@ async def ssh_bras_gpon_zte_command(ipaddress, commands, card, port, onu, slid, 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unknown error: {str(e)}")
 
+async def control_gpon_zte(ipaddress, listconfig):
+    try:
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+        # Sử dụng Transport để kết nối với thuật toán Diffie-Hellman
+        transport = paramiko.Transport((ipaddress, 22))
+        transport.get_security_options().kex = [
+            'diffie-hellman-group14-sha1',
+            'diffie-hellman-group-exchange-sha1'
+        ]
+        transport.connect(username=gpon_username, password=gpon_password)
+
+        channel = transport.open_session()
+        channel.get_pty()
+        channel.invoke_shell()
+
+        # Xác thực với tên người dùng và mật khẩu
+        channel.send(gpon_username + '\n')
+        await asyncio.sleep(1)
+        channel.send(gpon_password + '\n')
+        await asyncio.sleep(1)
+
+        results = []
+
+        # Duyệt qua từng cấu hình trong listconfig
+        for config in listconfig:
+            commands = config["commands"]
+            card = config["newcard"]
+            port = config["newport"]
+            onu = config["newonu"]
+            slid = config.get["slid"]  # Lấy giá trị slid nếu có
+            vlanims = config.get("vlanims", 0)
+            vlanmytv = config.get("vlanmytv", 0)
+            vlannet = config.get("vlannet", 0)
+
+            # Lấy các lệnh dựa trên loại lệnh
+            command_list = phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlannet)
+
+            # Thực hiện từng lệnh và lưu kết quả
+            for cmd in command_list:
+                result = await execute_command(channel, cmd)
+                results.append(result)
+        
+        # Đóng phiên SSH
+        channel.close()
+        transport.close()
+
+        # Trả về kết quả
+        return HTTPException(status_code=200, detail=results)
+
+    except paramiko.AuthenticationException:
+        raise HTTPException(status_code=401, detail="Authentication failed")
+    except paramiko.SSHException as sshException:
+        raise HTTPException(status_code=500, detail=f"SSH error: {str(sshException)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unknown error: {str(e)}")
