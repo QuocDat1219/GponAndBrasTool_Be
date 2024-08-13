@@ -11,10 +11,9 @@ controlManyGponRouter = APIRouter()
 
 @controlManyGponRouter.post('/api/gpon/control_many')
 async def controlGpon(data: dict):
-    loai_thiet_bi = data["deviceType"]
+    loai_thiet_bi = data["devicetype"]
     ipaddress = data["ipaddress"]
     listconfig = (data['listconfig'])  # Chuyển đổi chuỗi biểu diễn của list thành list thực
-   
     if loai_thiet_bi and ipaddress and listconfig:
         if loai_thiet_bi == "GPON ALU":
             return await control_gpon_alu(ipaddress, listconfig)

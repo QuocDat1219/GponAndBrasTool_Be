@@ -157,6 +157,33 @@ async def ssh_bras_gpon_hw_command(ipaddress, commands, card, port, onu, slid, v
         raise HTTPException(status_code=500, detail=f"error: {str(e)}")
 
 
+async def execute_command_list(channel, cmd):
+    channel.send(cmd + '\n')
+    await asyncio.sleep(1)
+    output = channel.recv(65535).decode().strip()
+    final_output = output
+
+    # Kiểm tra nếu kết quả trả về chứa '{ <cr>||<K> }' thì gửi thêm một lần enter
+    if '{ <cr>||<K> }' in output or '{ <cr>|gemport<K> }:' in output or '{ <cr>|desc<K>|fiber-route<K>|ont-type<K> }:' in output or '{ <cr>|globalleave<K>|igmp-ipv6-version<K>|log<K>|max-bandwidth<K>|max-program<K>|quickleave<K>|video<K> }' or '{ <cr>|dedicated-net-id<K> }' in output:
+        channel.send('\n')
+        await asyncio.sleep(1)
+        output = channel.recv(65535).decode().strip()
+        final_output += output
+
+  # Kiểm tra nếu kết quả trả về chứa '---- More ( Press \'Q\' to break ) ----'
+    if '---- More ( Press \'Q\' to break ) ----' in output:
+        channel.send(' ')
+        await asyncio.sleep(0.5)
+        output = channel.recv(65535).decode().strip()
+        final_output += output
+
+        channel.send('q')
+        await asyncio.sleep(0.5)
+        output = channel.recv(65535).decode().strip()
+        final_output += output
+
+    return final_output
+
 async def control_gpon_hw(ipaddress, listconfig):
     try:
         session = paramiko.SSHClient()
@@ -193,7 +220,7 @@ async def control_gpon_hw(ipaddress, listconfig):
             
             # Thực hiện từng lệnh và lưu kết quả
             for cmd in command_list:
-                result = await execute_command(channel, cmd)
+                result = await execute_command_list(channel, cmd)
                 results.append(result)
 
         # Đóng phiên SSH

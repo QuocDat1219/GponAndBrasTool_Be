@@ -212,6 +212,7 @@ async def control_gpon_alu(ipaddress, listconfig):
             # Thực hiện từng lệnh và lưu kết quả
             for cmd in command_list:
                 result = await execute_command(channel, cmd)
+                print(result)
                 results.append(result)
 
         # Đóng phiên SSH

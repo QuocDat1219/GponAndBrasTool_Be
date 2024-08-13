@@ -12,7 +12,7 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
     if commands == "sync_password":
         return [
             "show pon onu un",
-            "exit"
+            # "exit"
         ]
     elif commands == "delete_port":
         return [
@@ -104,7 +104,8 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
                 "exit"]
     elif commands == "check_mac":
         return [f"show mac interface gpon_onu-1/3/{port}:{onu}",
-                "exit"]
+                "exit"
+                ]
     elif commands == "change_sync_password":
         return ["configure terminal",
             f"interface  gpon_onu-1/3/{port}:{onu}",
@@ -112,8 +113,7 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
             f"auth-id pw {slid}",
             "end",
             "exit",
-            "exit",
-            "exit"
+            "y"
         ]
     elif commands == "change_sync_password_list":
         return ["configure terminal",
@@ -121,8 +121,6 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
             "sn-bind disable",
             f"auth-id pw {slid}",
             "end",
-            "exit",
-            "exit",
         ]
     else:
         raise HTTPException(status_code=400, detail="Lệnh trên thiết bị này chưa được cập nhật")
@@ -178,7 +176,7 @@ async def control_gpon_minizte(ipaddress, listconfig):
         session = paramiko.SSHClient()
         session.load_system_host_keys()
         session.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        session.connect(ipaddress, username=gpon_username, password=gpon_password, timeout=10)
+        session.connect(ipaddress, username=gpon_username, password=gpon_password)
         
         # Tạo kênh SSH
         channel = session.invoke_shell()
@@ -202,7 +200,6 @@ async def control_gpon_minizte(ipaddress, listconfig):
             vlanims = config.get("vlanims", 0)
             vlanmytv = config.get("vlanmytv", 0)
             vlannet = config.get("vlannet", 0)
-            print(vlanims)
 
             # Lấy các lệnh dựa trên loại lệnh
             command_list = phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlannet)
@@ -210,10 +207,12 @@ async def control_gpon_minizte(ipaddress, listconfig):
             # Thực hiện từng lệnh và lưu kết quả
             for cmd in command_list:
                 result = await execute_command(channel, cmd)
+                print(result)
                 results.append(result)
 
         # Đóng phiên SSH
         channel.send("exit\n")
+        channel.send("y\n")
         channel.close()
         session.close()
 

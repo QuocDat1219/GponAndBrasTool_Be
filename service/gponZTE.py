@@ -103,7 +103,8 @@ def phan_loai_command(command, card, port, onu, slid, vlanims, vlanmytv, vlannet
                 "exit"]
     elif command == "check_mac":
         return [f"show mac gpon  onu  gpon-onu_1/{card}/{port}:{onu}",
-                "exit"]
+                "exit"
+                ]
     elif command == "change_sync_password":
         return ["configure  terminal",
                 f"interface  gpon-onu_1/{card}/{port}:{onu}",
@@ -111,8 +112,7 @@ def phan_loai_command(command, card, port, onu, slid, vlanims, vlanmytv, vlannet
                 f"registration-method pw {slid}",
                 "end",
                 "exit",
-                "exit",
-                "exit"
+                "y"
                 ]
     elif command == "change_sync_password_list":
         return ["configure terminal",
@@ -120,8 +120,6 @@ def phan_loai_command(command, card, port, onu, slid, vlanims, vlanmytv, vlannet
             "sn-bind disable",
             f"auth-id pw {slid}",
             "end",
-            "exit",
-            "exit",
         ]
     else:
         raise HTTPException(status_code=400, detail="Lệnh trên thiết bị này chưa được cập nhật")
@@ -178,6 +176,7 @@ async def ssh_bras_gpon_zte_command(ipaddress, commands, card, port, onu, slid, 
 
 async def control_gpon_zte(ipaddress, listconfig):
     try:
+
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
@@ -207,7 +206,7 @@ async def control_gpon_zte(ipaddress, listconfig):
             card = config["newcard"]
             port = config["newport"]
             onu = config["newonu"]
-            slid = config.get["slid"]  # Lấy giá trị slid nếu có
+            slid = config["slid"] 
             vlanims = config.get("vlanims", 0)
             vlanmytv = config.get("vlanmytv", 0)
             vlannet = config.get("vlannet", 0)
@@ -218,10 +217,12 @@ async def control_gpon_zte(ipaddress, listconfig):
             # Thực hiện từng lệnh và lưu kết quả
             for cmd in command_list:
                 result = await execute_command(channel, cmd)
+                print(result)
                 results.append(result)
         
         # Đóng phiên SSH
         channel.send("exit\n")
+        channel.send("y\n")
         channel.close()
         transport.close()
 
