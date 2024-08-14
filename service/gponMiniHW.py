@@ -18,8 +18,6 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
                 ]
     elif commands == "view_info_onu":
         return [f"display ont info 0 {card} {port} {onu}",
-                "quit",
-                "y"
                 ]
     elif commands == "delete_port":
         return [
@@ -30,8 +28,6 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
             f"ont delete {port} {onu}",
             "quit",
             "quit",
-            "quit",
-            "y"
         ]
     elif commands == "create_dvnet":
         serviceport_gem1 = port * 64 + onu
@@ -43,8 +39,6 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
                 f"service-port {serviceport_gem1} vlan {vlannet} gpon 0/1/{port} ont {onu} gemport 1 multi-service user-vlan 11 tag-transform translate inbound traffic-table name Fiber300M outbound traffic-table name Fiber300M",
                 f"service-port {serviceport_gem5} vlan 4040 gpon 0/1/{port} ont {onu} gemport 5 multi-service user-vlan 4000 tag-transform translate inbound traffic-table name TR069 outbound traffic-table name TR069",
                 "quit",
-                "quit",
-                "y"
         ]
     elif commands == "dv_ims":
         serviceport_ims = port * 64 + onu + 512
@@ -52,8 +46,6 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
                 "config",
                 f"service-port {serviceport_ims} vlan {vlanims} gpon 0/1/{port} ont {onu} gemport 3 multi-service user-vlan 13 tag-transform translate inbound traffic-table name VOIP outbound traffic-table name VOIP",
                 "quit",
-                "quit",
-                "y"
         ]
     elif commands == "dv_mytv":
         serviceport = port * 64 + onu + 1536
@@ -66,9 +58,6 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
                 f"multicast-vlan 99",
                 f"igmp multicast-vlan member service-port {serviceport}",
                 "quit",
-                "quit",
-                "y"
-
         ]   
     elif commands == "check_mac":
         return [f"display  mac-address  port 0/{card}/{port} ont {onu}",
@@ -77,21 +66,17 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
                 ]
     elif commands == "check_service":
         return [f"display  service-port port 0/{card}/{port} ont {onu}",
-                "quit",
-                "y"
                 ]
     elif commands == "change_sync_password":
         return ["Config",
-                "interface  gpon 0/0",
+                f"interface  gpon 0/{card}",
                 f"ont  modify {port} {onu} password {slid}",
                 "quit",
                 "quit",
-                "quit",
-                "y"
         ]
     elif commands == "change_sync_password_list":
         return ["Config",
-                "interface  gpon 0/0",
+                f"interface  gpon 0/{card}",
                 f"ont  modify {port} {onu} password {slid}",
                 "quit",
                 "quit",
@@ -100,8 +85,6 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
     elif commands == "check_service_port":
         return [
             f"display service-port port 0/{card}/{port} ont {onu}",
-            "quit",
-            "y"
         ]
     else:
         raise HTTPException(status_code=400, detail={"error": "Chức năng trên thiết bị này chưa được cập nhật"})

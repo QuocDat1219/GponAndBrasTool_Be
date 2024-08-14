@@ -4,6 +4,7 @@ import paramiko
 import time
 import os
 from fastapi import HTTPException
+import telnetlib3
 
 # Lấy thông tin đăng nhập gpon
 gpon_username = os.getenv("ZTE_USERNAME")
@@ -116,9 +117,9 @@ def phan_loai_command(command, card, port, onu, slid, vlanims, vlanmytv, vlannet
                 ]
     elif command == "change_sync_password_list":
         return ["configure terminal",
-            f"interface  gpon_onu-1/3/{port}:{onu}",
+            f"interface  gpon-onu_1/{card}/{port}:{onu}",
             "sn-bind disable",
-            f"auth-id pw {slid}",
+            f"registration-method pw {slid}",
             "end",
         ]
     else:
@@ -174,28 +175,26 @@ async def ssh_bras_gpon_zte_command(ipaddress, commands, card, port, onu, slid, 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unknown error: {str(e)}")
 
+# Hàm thực thi lệnh Telnet và trả về kết quả
+async def execute_telnet_command(reader, writer, cmd):
+    writer.write(cmd.encode('ascii') + b'\n')
+    await writer.drain()
+    await asyncio.sleep(0.7)
+    output = await reader.read(65535)
+    return cmd + '\n' + output.decode('latin-1').strip()
+
+# Hàm điều khiển GPON ZTE
 async def control_gpon_zte(ipaddress, listconfig):
     try:
-
-        ssh = paramiko.SSHClient()
-        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-
-        # Sử dụng Transport để kết nối với thuật toán Diffie-Hellman
-        transport = paramiko.Transport((ipaddress, 22))
-        transport.get_security_options().kex = [
-            'diffie-hellman-group14-sha1',
-            'diffie-hellman-group-exchange-sha1'
-        ]
-        transport.connect(username=gpon_username, password=gpon_password)
-
-        channel = transport.open_session()
-        channel.get_pty()
-        channel.invoke_shell()
+        # Kết nối Telnet
+        reader, writer = await asyncio.open_connection(ipaddress, 23)
 
         # Xác thực với tên người dùng và mật khẩu
-        channel.send(gpon_username + '\n')
+        writer.write(gpon_username.encode('ascii') + b'\n')
+        await writer.drain()
         await asyncio.sleep(1)
-        channel.send(gpon_password + '\n')
+        writer.write(gpon_password.encode('ascii') + b'\n')
+        await writer.drain()
         await asyncio.sleep(1)
 
         results = []
@@ -206,32 +205,25 @@ async def control_gpon_zte(ipaddress, listconfig):
             card = config["newcard"]
             port = config["newport"]
             onu = config["newonu"]
-            slid = config["slid"] 
+            slid = config["slid"]
             vlanims = config.get("vlanims", 0)
             vlanmytv = config.get("vlanmytv", 0)
             vlannet = config.get("vlannet", 0)
-
-            # Lấy các lệnh dựa trên loại lệnh
-            command_list = phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlannet)
-
-            # Thực hiện từng lệnh và lưu kết quả
-            for cmd in command_list:
-                result = await execute_command(channel, cmd)
+            
+            # Phân loại và thực thi lệnh
+            cmd_list = phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlannet)
+            for cmd in cmd_list:
+                result = await execute_telnet_command(reader, writer, cmd)
                 print(result)
                 results.append(result)
-        
-        # Đóng phiên SSH
-        channel.send("exit\n")
-        channel.send("y\n")
-        channel.close()
-        transport.close()
 
-        # Trả về kết quả
+        writer.write(b'exit\n')
+        await writer.drain()
+        await asyncio.sleep(0.7)
+        writer.write(b'y\n')
+        await writer.drain()
+        await asyncio.sleep(0.7)
+        writer.close()
         return HTTPException(status_code=200, detail=results)
-
-    except paramiko.AuthenticationException:
-        raise HTTPException(status_code=401, detail="Authentication failed")
-    except paramiko.SSHException as sshException:
-        raise HTTPException(status_code=500, detail=f"SSH error: {str(sshException)}")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Unknown error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"error: {str(e)}")
