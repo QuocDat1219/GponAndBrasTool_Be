@@ -93,10 +93,10 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
         ]
     elif commands == "change_sync_password_list":
         return [f"configure equipment ont interface 1/1/{card}/{port}/{onu}",
-            f"configure equipment ont interface 1/1/{card}/{port}/{onu} admin-state  down",
+            f"configure equipment ont interface 1/1/{card}/{port}/{onu} admin-state down",
             f"configure equipment ont interface 1/1/{card}/{port}/{onu} no sernum",
             f"configure equipment ont interface 1/1/{card}/{port}/{onu} subslocid {slid}",
-            f"configure equipment ont interface 1/1/{card}/{port}/{onu} admin-state  up",
+            f"configure equipment ont interface 1/1/{card}/{port}/{onu} admin-state up",
             "exit all",
         ]
     else:
@@ -140,6 +140,7 @@ async def execute_command(channel, cmd):
     channel.send(cmd + '\n')
     await asyncio.sleep(0.5)
     output = channel.recv(65535).decode().strip()
+    print(output)
     return output
 
 async def ssh_bras_gpon_alu_command(ipaddress, commands, card, port, onu, slid, vlanims, vlanmytv, vlannet):

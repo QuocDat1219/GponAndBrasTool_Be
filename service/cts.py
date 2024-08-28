@@ -33,8 +33,6 @@ async def get_user_visa(username: str):
             # Gọi API POST đến Node.js server và truyền vào body là username
             response = requests.post(visa_url, json={"username": username}, headers=headers)
             response.raise_for_status()  # Kiểm tra lỗi HTTP
-
-            # Trả về dữ liệu JSON từ Node.js server
             return HTTPException(status_code=200, detail={"msg": "success", "data": response.json()})
     except Exception as e:
         raise HTTPException(status_code=500, detail={"msg": "Đã xảy ra lỗi khi lấy dữ liệu", "error": str(e)})

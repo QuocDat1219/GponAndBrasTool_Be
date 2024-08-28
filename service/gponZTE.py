@@ -125,55 +125,36 @@ def phan_loai_command(command, card, port, onu, slid, vlanims, vlanmytv, vlannet
     else:
         raise HTTPException(status_code=400, detail="Lệnh trên thiết bị này chưa được cập nhật")
     
-async def execute_command(channel, cmd):
-    try:
-        channel.send(cmd + '\n')
-        time.sleep(1)
-        output = ""
-        while not channel.recv_ready():
-            time.sleep(0.1)
-        while channel.recv_ready():
-            output += channel.recv(9999).decode('utf-8')
-        return cmd + '\n' + output.strip()
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"error: {str(e)}")
+async def execute_command(reader, writer, cmd):
+    writer.write(cmd.encode('ascii') + b'\n')
+    await writer.drain()
+    await asyncio.sleep(0.7)
+    output = await reader.read(65535)
+    return cmd + '\n' + output.decode('latin-1').strip()
 
 async def ssh_bras_gpon_zte_command(ipaddress, commands, card, port, onu, slid, vlanims, vlanmytv, vlannet):
     try:
-        ssh = paramiko.SSHClient()
-        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-
-        transport = paramiko.Transport((ipaddress, 22))
-        transport.get_security_options().kex = [
-            'diffie-hellman-group14-sha1',
-            'diffie-hellman-group-exchange-sha1'
-        ]
-        transport.connect(username=gpon_username, password=gpon_password)
-
-        channel = transport.open_session()
-        channel.get_pty()
-        channel.invoke_shell()
+        reader, writer = await asyncio.open_connection(ipaddress, 23)
 
         # Xác thực với tên người dùng và mật khẩu
-        channel.send(gpon_username + '\n')
-        time.sleep(1)
-        channel.send(gpon_password + '\n')
-        time.sleep(1)
+        writer.write(gpon_username.encode('ascii') + b'\n')
+        await writer.drain()
+        await asyncio.sleep(1)
+        writer.write(gpon_password.encode('ascii') + b'\n')
+        await writer.drain()
+        await asyncio.sleep(1)
 
+        # Thực thi các lệnh
         results = []
         for cmd in phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlannet):
-            result = await execute_command(channel, cmd)
+            print(cmd)
+            result = await execute_command(reader, writer, cmd)
             results.append(result)
         
-        channel.close()
-        transport.close()
+        writer.close()
         return HTTPException(status_code=200, detail=results)
-    except paramiko.AuthenticationException:
-        raise HTTPException(status_code=401, detail="Authentication failed")
-    except paramiko.SSHException as sshException:
-        raise HTTPException(status_code=500, detail=f"SSH error: {str(sshException)}")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Unknown error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"error: {str(e)}")
 
 # Hàm thực thi lệnh Telnet và trả về kết quả
 async def execute_telnet_command(reader, writer, cmd):
