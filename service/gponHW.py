@@ -76,7 +76,7 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
                 f"interface  gpon 0/{card}",
                 f"ont  modify {port} {onu} password {slid}",
                 "quit",
-                "quit",
+                "quit"
         ]
     elif commands == "check_service_port":
         return [
@@ -92,7 +92,7 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
                 "quit",
                 f"service-port {service_portnet} vlan {vlannet} gpon 0/{card}/{port} ont {onu} gemport 1 multi-service user-vlan  11 tag-transform translate inbound traffic-table index 300 outbound traffic-table index 300",
                 f"service-port {service_portgnms} vlan 4040 gpon 0/{card}/{port} ont {onu} gemport 5 multi-service user-vlan 4000 tag-transform translate inbound traffic-table index 300 outbound traffic-table index 300",
-                "quit",
+                "quit"
         ]
     elif commands == "dv_ims_list":
         return ["config",

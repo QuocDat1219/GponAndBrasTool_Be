@@ -73,13 +73,13 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
         ]   
     elif commands == "check_mac":
         return [f"display  mac-address  port 0/{card}/{port} ont {onu}",
-                # "quit",
-                # "y"
+                "quit",
+                "y"
                 ]
     elif commands == "check_service":
         return [f"display  service-port port 0/{card}/{port} ont {onu}",
-                # "quit",
-                # "y"
+                "quit",
+                "y"
                 ]
     elif commands == "change_sync_password":
         return ["Config",

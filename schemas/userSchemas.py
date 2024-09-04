@@ -5,6 +5,7 @@ def userEntity(item) -> dict:
         "username": item['username'],
         "password": item['password'],
         "role": item['role'],
+        "created_at": item.get('created_at', None)  # Include created_at field
     }
     
 def serializeDict(a) -> dict:

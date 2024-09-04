@@ -1,3 +1,4 @@
+from datetime import datetime
 from fastapi import APIRouter, HTTPException, Depends
 from models.userModel import User
 from config.db import conn
@@ -29,22 +30,55 @@ def hash_password(password:str) -> str:
 def verify_password(plain_password:str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
+#Lấy danh sách tài khoản
+@userRoutes.get("/api/user/")
+def get_all_user():
+    try:
+        # Tìm tất cả người dùng không phải là admin và không lấy trường mật khẩu
+        user_list = list(conn.gponbrastool.user.find(
+            {"role": {"$ne": "admin"}},  # Lọc các tài khoản không phải là admin
+            {"password": 0}  # Không lấy trường mật khẩu
+        ))
+
+        if not user_list:
+            return []
+
+        return serializeList(user_list)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+#Lấy danh sách tài khoản
+@userRoutes.get("/api/user/{id}")
+def get_all_user(id):
+    try:
+        user = conn.gponbrastool.user.find_one({"_id": ObjectId(id)})
+        print(user)
+        if not user:
+            return []
+        return serializeDict(user)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 # Create new user
 @userRoutes.post("/api/user/")
 def create_New_User(user: User):
     try:
         if conn.gponbrastool.user.find_one({"username": user.username}):
-            return HTTPException(status_code=400, detail={"msg": "Username đã được sử dụng"})
+            raise HTTPException(status_code=400, detail={"msg": "Username đã được sử dụng"})
         
         # Mã hóa password
         hashed_password = hash_password(user.password)
         user.password = hashed_password
-        
-        created_user = conn.gponbrastool.user.insert_one(dict(user))
+
+        # Thêm trường created_at
+        user_dict = dict(user)
+        user_dict["created_at"] = datetime.utcnow()
+
+        created_user = conn.gponbrastool.user.insert_one(user_dict)
         if created_user:
             return serializeDict(conn.gponbrastool.user.find_one({"_id": created_user.inserted_id}))
     except Exception as e:
-        return HTTPException(status_code=500, detail={"msg": "Không thể tạo người dùng mới", "error": str(e)})
+        raise HTTPException(status_code=500, detail={"msg": "Không thể tạo người dùng mới", "error": str(e)})
     
     # Đăng nhập người dùng
 @userRoutes.post("/api/user/login")
@@ -52,6 +86,7 @@ def login_user(user: LoginModel):
     try:
         # Tìm người dùng theo username
         db_user = conn.gponbrastool.user.find_one({"username": user.username})
+        role =  db_user["role"]
         if not db_user:
             raise HTTPException(status_code=404, detail="Không tìm thấy tài khoản")
         
@@ -61,7 +96,7 @@ def login_user(user: LoginModel):
         
         # Tạo JWT token
         token = signJWT(str(db_user["_id"]), db_user["fullname"], db_user["role"], db_user["username"])
-        return token
+        return {"token": token, "role": role}
     except Exception as e:
         raise HTTPException(status_code=500, detail={"msg": "Sai tên tài khoản hoặc mật khẩu", "error": str(e)})
     

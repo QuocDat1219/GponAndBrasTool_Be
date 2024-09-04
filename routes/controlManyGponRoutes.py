@@ -9,7 +9,7 @@ from service.gponMiniZTE import control_gpon_minizte_list
 
 controlManyGponRouter = APIRouter()
 
-@controlManyGponRouter.post('/api/gpon/control_many')
+@controlManyGponRouter.post('/api/gpon/control_many',dependencies=[Depends(jwtBearer())])
 async def controlGpon(data: dict):
     loai_thiet_bi = data["devicetype"]
     ipaddress = data["ipaddress"]

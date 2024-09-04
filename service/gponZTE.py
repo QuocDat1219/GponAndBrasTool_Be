@@ -121,7 +121,7 @@ def phan_loai_command(command, card, port, onu, slid, vlanims, vlanmytv, vlannet
             f"interface  gpon-onu_1/{card}/{port}:{onu}",
             "sn-bind disable",
             f"registration-method pw {slid}",
-            "end",
+            "end"
         ]
     elif command == "create_dvnet_list":
         return [
