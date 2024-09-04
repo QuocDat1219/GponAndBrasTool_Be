@@ -84,6 +84,21 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
             "quit",
             "y"
         ]
+    elif commands == "create_dvnet_list":
+        return [
+                "config",
+                f"interface gpon 0/{card}",
+                f"ont add {port} {onu} password-auth \"{slid}\" always-on omci ont-lineprofile-id 300 ont-srvprofile-id 300 desc \"noname\"",
+                "quit",
+                f"service-port {service_portnet} vlan {vlannet} gpon 0/{card}/{port} ont {onu} gemport 1 multi-service user-vlan  11 tag-transform translate inbound traffic-table index 300 outbound traffic-table index 300",
+                f"service-port {service_portgnms} vlan 4040 gpon 0/{card}/{port} ont {onu} gemport 5 multi-service user-vlan 4000 tag-transform translate inbound traffic-table index 300 outbound traffic-table index 300",
+                "quit",
+        ]
+    elif commands == "dv_ims_list":
+        return ["config",
+                f"service-port {service_portims} vlan {vlanims} gpon 0/{card}/{port} ont {onu} gemport 3 multi-service user-vlan 13 tag-transform translate inbound traffic-table index 300 outbound traffic-table index 300",
+                "quit"
+        ]  
     else:
         raise HTTPException(status_code=400, detail={"error": "Chức năng trên thiết bị này chưa được cập nhật"})
     
@@ -184,7 +199,8 @@ async def execute_command_list(channel, cmd):
 
     return final_output
 
-async def control_gpon_hw(ipaddress, listconfig):
+#Hàm điều khiển gpon hw tạo dãy
+async def control_gpon_hw_list(ipaddress, listconfig):
     try:
         session = paramiko.SSHClient()
         session.load_system_host_keys()
@@ -205,7 +221,8 @@ async def control_gpon_hw(ipaddress, listconfig):
 
         # Duyệt qua từng cấu hình trong listconfig
         for config in listconfig:
-            commands = config["commands"]
+            # Chuyển đổi chuỗi lệnh thành danh sách
+            command_list = [cmd.strip() for cmd in config["commands"].strip("[]").split(",")]
             card = config["newcard"]
             port = config["newport"]
             onu = config["newonu"]
@@ -216,15 +233,14 @@ async def control_gpon_hw(ipaddress, listconfig):
             service_portnet = config.get("service_portnet",0)
             service_portgnms = config.get("service_portgnms",0)
             service_portims = config.get("service_portims",0)
-            print(vlanims)
-
-            # Lấy các lệnh dựa trên loại lệnh
-            command_list = phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlannet,service_portnet,service_portgnms, service_portims)
-            
-            # Thực hiện từng lệnh và lưu kết quả
-            for cmd in command_list:
-                result = await execute_command_list(channel, cmd)
-                results.append(result)
+            print(command_list)
+            # Thực hiện từng lệnh
+            for command in command_list:
+                command_steps = phan_loai_command(command, card, port, onu, slid, vlanims, vlanmytv, vlannet,service_portnet,service_portgnms,service_portims)
+                for step in command_steps:
+                    result = await execute_command(channel, step)
+                    print(result)
+                    results.append(result)
 
         # Đóng phiên SSH
         channel.send('quit\n')

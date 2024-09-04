@@ -120,7 +120,57 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
             f"interface  gpon_onu-1/3/{port}:{onu}",
             "sn-bind disable",
             f"auth-id pw {slid}",
-            "end",
+            "end"
+        ]
+    elif commands == "create_dvnet_list":
+        return [
+            "configure t",
+            f"interface gpon_olt-1/3/{port}",
+            f"onu {onu} type GW040 pw {slid}",
+            "exit",
+            f"interface gpon_onu-1/3/{port}:{onu}",
+            "vport-mode manual",
+            "tcont 1 name HSI profile T4_300M",
+            "gemport 1 name HSI tcont 1",
+            "vport 1 map-type vlan",
+            "vport-map 1 1 vlan 11",
+            "tcont 6 name GNMS profile Fiber300M",
+            "gemport 6 name GNMS tcont 6",
+            "vport 1 map-type vlan",
+            "vport-map 1 6 vlan 4000",
+            "exit",
+            f"interface vport-1/3/{port}.{onu}:1",
+            f"service-port 1 user-vlan 11 vlan {vlannet}",
+            f"service-port 1 user-vlan 11 vlan {vlannet} egress Fiber300M",
+            "service-port 6 user-vlan 4000 vlan 4040 egress Fiber300M",
+            "exit",
+            f"pon-onu-mng gpon_onu-1/3/{port}:{onu}",
+            "service 1 gemport 1 vlan 11",
+            "wan 1 service internet host 1",
+            "wan-ip ipv4 mode pppoe vlan-profile HSI host 1",
+            "service 6 gemport 6 vlan 4000",
+            "exit",
+            "exit"
+        ]
+    elif commands == "dv_ims_list":
+        return [
+            "configure t",
+            f"interface gpon_onu-1/3/{port}:{onu}",
+            "vport-mode manual",
+            "tcont 3 name VOIP profile T1_80K",
+            "gemport 3 name VOIP tcont 3",
+            "vport 1 map-type vlan",
+            "vport-map 1 3 vlan 13",
+            "exit",
+            f"interface vport-1/3/{port}.{onu}:1",
+            f"service-port 3 user-vlan 13 vlan {vlanims}",
+            f"service-port 3 user-vlan 13 vlan {vlanims} egress G_80K",
+            "exit",
+            f"pon-onu-mng gpon_onu-1/3/{port}:{onu}",
+            "service 3 gemport 3 vlan 13",
+            "voip protocol sip",
+            "exit",
+            "exit"
         ]
     else:
         raise HTTPException(status_code=400, detail="Lệnh trên thiết bị này chưa được cập nhật")
@@ -170,13 +220,13 @@ async def ssh_bras_gpon_mini_zte_command(ipaddress, commands, card, port, onu, s
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"error: {str(e)}")
     
-
-async def control_gpon_minizte(ipaddress, listconfig):
+#Hàm điều khiển gpon mini zte tạo dãy
+async def control_gpon_minizte_list(ipaddress, listconfig):
     try:
         session = paramiko.SSHClient()
         session.load_system_host_keys()
         session.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        session.connect(ipaddress, username=gpon_username, password=gpon_password)
+        session.connect(ipaddress, username=gpon_username, password=gpon_password, timeout=10)
         
         # Tạo kênh SSH
         channel = session.invoke_shell()
@@ -192,7 +242,8 @@ async def control_gpon_minizte(ipaddress, listconfig):
 
         # Duyệt qua từng cấu hình trong listconfig
         for config in listconfig:
-            commands = config["commands"]
+            # Chuyển đổi chuỗi lệnh thành danh sách
+            command_list = [cmd.strip() for cmd in config["commands"].strip("[]").split(",")]
             card = config["newcard"]
             port = config["newport"]
             onu = config["newonu"]
@@ -201,18 +252,18 @@ async def control_gpon_minizte(ipaddress, listconfig):
             vlanmytv = config.get("vlanmytv", 0)
             vlannet = config.get("vlannet", 0)
 
-            # Lấy các lệnh dựa trên loại lệnh
-            command_list = phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlannet)
-            
-            # Thực hiện từng lệnh và lưu kết quả
-            for cmd in command_list:
-                result = await execute_command(channel, cmd)
-                print(result)
-                results.append(result)
+            print(command_list)
+            # Thực hiện từng lệnh
+            for command in command_list:
+                command_steps = phan_loai_command(command, card, port, onu, slid, vlanims, vlanmytv, vlannet)
+                for step in command_steps:
+                    result = await execute_command(channel, step)
+                    print(result)
+                    results.append(result)
 
         # Đóng phiên SSH
-        channel.send("exit\n")
-        channel.send("y\n")
+        channel.send('exit\n')
+        channel.send('y\n')
         channel.close()
         session.close()
 

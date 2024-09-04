@@ -1,11 +1,11 @@
 import asyncio
 from fastapi import APIRouter, HTTPException, Depends
 from auth.jwt_bearer import jwtBearer
-from service.gponALU import control_gpon_alu
-from service.gponHW import control_gpon_hw
-from service.gponMiniHW import control_gpon_minihw
-from service.gponZTE import control_gpon_zte
-from service.gponMiniZTE import control_gpon_minizte
+from service.gponALU import control_gpon_alu_list
+from service.gponHW import control_gpon_hw_list
+from service.gponMiniHW import control_gpon_minihw_list
+from service.gponZTE import control_gpon_zte_list
+from service.gponMiniZTE import control_gpon_minizte_list
 
 controlManyGponRouter = APIRouter()
 
@@ -16,15 +16,15 @@ async def controlGpon(data: dict):
     listconfig = (data['listconfig'])  # Chuyển đổi chuỗi biểu diễn của list thành list thực
     if loai_thiet_bi and ipaddress and listconfig:
         if loai_thiet_bi == "GPON ALU":
-            return await control_gpon_alu(ipaddress, listconfig)
+            return await control_gpon_alu_list(ipaddress, listconfig)
         elif loai_thiet_bi == "GPON HW":
-           return await control_gpon_hw(ipaddress, listconfig)
+           return await control_gpon_hw_list(ipaddress, listconfig)
         elif loai_thiet_bi == "GPON MINI HW":
-           return await control_gpon_minihw(ipaddress, listconfig)
+           return await control_gpon_minihw_list(ipaddress, listconfig)
         elif loai_thiet_bi == "GPON ZTE":
-            return await control_gpon_zte(ipaddress, listconfig)
+            return await control_gpon_zte_list(ipaddress, listconfig)
         elif loai_thiet_bi == "GPON MINI ZTE":
-            return await control_gpon_minizte(ipaddress, listconfig)
+            return await control_gpon_minizte_list(ipaddress, listconfig)
         else:
             raise HTTPException(status_code=400, detail="Thiết bị này không được hỗ trợ")
     else:

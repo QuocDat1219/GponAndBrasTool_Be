@@ -1,7 +1,8 @@
 import os
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_socketio import SocketManager
+from typing import List
 
 from routes.ipAddressRoutes import ipAddressRoutes
 from routes.shelfRoutes import shelfRoutes
@@ -43,7 +44,9 @@ app.include_router(controlManyGponRouter)
 # Tạo SocketManager
 manager = SocketManager(app)
 
-#Xác định xử lý các xự kiện
+results: List[str] = []
+
+# Handle WebSocket events
 @manager.on("connect")
 async def connect(sid, environ):
     print(f"Client {sid} connected")

@@ -75,12 +75,12 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
     elif commands == "check_capacity":
         return [f"show equipment ont optics 1/1/{card}/{port}/{onu}",
                 "exit all",
-                "logout"
+                # "logout"
                 ]
     elif commands == "check_mac":
         return [f"show vlan bridge-port-fdb 1/1/{card}/{port}/{onu}/14/1",
                 "exit all",
-                "logout"
+                # "logout"
                 ]
     elif commands == "change_sync_password":
         return [f"configure equipment ont interface 1/1/{card}/{port}/{onu}",
@@ -97,7 +97,34 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
             f"configure equipment ont interface 1/1/{card}/{port}/{onu} no sernum",
             f"configure equipment ont interface 1/1/{card}/{port}/{onu} subslocid {slid}",
             f"configure equipment ont interface 1/1/{card}/{port}/{onu} admin-state up",
+            "exit all"
+        ]
+    elif commands == "create_dvnet_list":
+        return [
+            f"configure equipment ont interface 1/1/{card}/{port}/{onu} sw-ver-pland disabled subslocid {slid} fec-up disable sw-dnload-version disabled plnd-var SIP enable-aes enable sn-bundle-ctrl bundle",
             "exit all",
+            f"configure equipment ont slot 1/1/{card}/{port}/{onu}/14 planned-card-type veip plndnumdataports 1 plndnumvoiceports 0 port-type uni admin-state up",
+            "exit all",
+            f"configure interface port uni:1/1/{card}/{port}/{onu}/14/1 admin-up",
+            "exit all",
+            f"configure bridge port 1/1/{card}/{port}/{onu}/14/1 max-unicast-mac 20",
+            "exit all",
+            f"configure qos interface  1/1/{card}/{port}/{onu}/14/1 upstream-queue 0 bandwidth-profile name:Fiber300M",
+            "exit all",
+            f"configure qos interface  1/1/{card}/{port}/{onu}/14/1 queue 0 shaper-profile name:Fiber300M",
+            "exit all",
+            f"configure bridge port  1/1/{card}/{port}/{onu}/14/1 vlan-id 11 tag single-tagged l2fwder-vlan {vlannet} vlan-scope local",
+            "exit all",
+            f"configure bridge port 1/1/{card}/{port}/{onu}/14/1 vlan-id 4000 tag single-tagged network-vlan 4040 vlan-scope local",
+            "exit all"
+        ]
+    elif commands == "dv_ims_list":
+        return [
+            f"configure qos interface 1/1/{card}/{port}/{onu}/14/1 queue 5 shaper-profile name:VoIP",
+            f"configure qos interface 1/1/{card}/{port}/{onu}/14/1 upstream-queue 5 bandwidth-profile name:VoIP",
+            f"configure bridge port 1/1/{card}/{port}/{onu}/14/1 vlan-id 13 tag single-tagged l2fwder-vlan {vlanims} vlan-scope local",
+            f"configure bridge port 1/1/{card}/{port}/{onu}/14/1 vlan-id 4000 tag single-tagged l2fwder-vlan 4040 vlan-scope local",
+            "exit all"
         ]
     else:
         raise HTTPException(status_code=400, detail="Lệnh trên thiết bị này chưa được cập nhật")
@@ -174,9 +201,9 @@ async def ssh_bras_gpon_alu_command(ipaddress, commands, card, port, onu, slid, 
         raise http_error
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"error: {str(e)}")
-    
-    
-async def control_gpon_alu(ipaddress, listconfig):
+
+#Hàm điều khiển gpon alu tạo dãy
+async def control_gpon_alu_list(ipaddress, listconfig):
     try:
         session = paramiko.SSHClient()
         session.load_system_host_keys()
@@ -197,7 +224,8 @@ async def control_gpon_alu(ipaddress, listconfig):
 
         # Duyệt qua từng cấu hình trong listconfig
         for config in listconfig:
-            commands = config["commands"]
+            # Chuyển đổi chuỗi lệnh thành danh sách
+            command_list = [cmd.strip() for cmd in config["commands"].strip("[]").split(",")]
             card = config["newcard"]
             port = config["newport"]
             onu = config["newonu"]
@@ -205,16 +233,15 @@ async def control_gpon_alu(ipaddress, listconfig):
             vlanims = config.get("vlanims", 0)
             vlanmytv = config.get("vlanmytv", 0)
             vlannet = config.get("vlannet", 0)
-            print(vlanims)
 
-            # Lấy các lệnh dựa trên loại lệnh
-            command_list = phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlannet)
-            
-            # Thực hiện từng lệnh và lưu kết quả
-            for cmd in command_list:
-                result = await execute_command(channel, cmd)
-                print(result)
-                results.append(result)
+            print(command_list)
+            # Thực hiện từng lệnh
+            for command in command_list:
+                command_steps = phan_loai_command(command, card, port, onu, slid, vlanims, vlanmytv, vlannet)
+                for step in command_steps:
+                    result = await execute_command(channel, step)
+                    print(result)
+                    results.append(result)
 
         # Đóng phiên SSH
         channel.send('logout\n')
@@ -228,4 +255,3 @@ async def control_gpon_alu(ipaddress, listconfig):
         raise http_error
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"error: {str(e)}")
-

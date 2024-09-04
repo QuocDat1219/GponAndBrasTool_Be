@@ -73,13 +73,13 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
         ]   
     elif commands == "check_mac":
         return [f"display  mac-address  port 0/{card}/{port} ont {onu}",
-                "quit",
-                "y"
+                # "quit",
+                # "y"
                 ]
     elif commands == "check_service":
         return [f"display  service-port port 0/{card}/{port} ont {onu}",
-                "quit",
-                "y"
+                # "quit",
+                # "y"
                 ]
     elif commands == "change_sync_password":
         return ["Config",
@@ -94,15 +94,31 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
         return ["Config",
                 f"interface  gpon 0/{card}",
                 f"ont  modify {port} {onu} password {slid}",
-                "quit",
-                "quit",
-
+                "quit"
         ]
     elif commands == "check_service_port":
         return [
             f"display service-port port 0/{card}/{port} ont {onu}",
             "quit",
             "y"
+        ]
+    elif commands == "create_dvnet_list":
+        serviceport_gem1 = port * 64 + onu
+        serviceport_gem5 = port * 64 + onu + 1024
+        return ["config",
+                "interface gpon 0/1",
+                f"ont add {port} {onu} password-auth {slid} always-on omci ont-lineprofile-id 300 ont-srvprofile-id 300",
+                "quit",
+                f"service-port {serviceport_gem1} vlan {vlannet} gpon 0/1/{port} ont {onu} gemport 1 multi-service user-vlan 11 tag-transform translate inbound traffic-table name Fiber300M outbound traffic-table name Fiber300M",
+                f"service-port {serviceport_gem5} vlan 4040 gpon 0/1/{port} ont {onu} gemport 5 multi-service user-vlan 4000 tag-transform translate inbound traffic-table name TR069 outbound traffic-table name TR069",
+                "quit"
+        ]
+    elif commands == "dv_ims_list":
+        serviceport_ims = port * 64 + onu + 512
+        return [
+                "config",
+                f"service-port {serviceport_ims} vlan {vlanims} gpon 0/1/{port} ont {onu} gemport 3 multi-service user-vlan 13 tag-transform translate inbound traffic-table name VOIP outbound traffic-table name VOIP",
+                "quit"
         ]
     else:
         raise HTTPException(status_code=400, detail={"error": "Chức năng trên thiết bị này chưa được cập nhật"})
@@ -206,8 +222,8 @@ async def execute_command_list(channel, cmd):
 
     return final_output
 
-
-async def control_gpon_minihw(ipaddress, listconfig):
+#Hàm điều khiển gpon mini hw tạo dãy
+async def control_gpon_minihw_list(ipaddress, listconfig):
     try:
         session = paramiko.SSHClient()
         session.load_system_host_keys()
@@ -228,7 +244,8 @@ async def control_gpon_minihw(ipaddress, listconfig):
 
         # Duyệt qua từng cấu hình trong listconfig
         for config in listconfig:
-            commands = config["commands"]
+            # Chuyển đổi chuỗi lệnh thành danh sách
+            command_list = [cmd.strip() for cmd in config["commands"].strip("[]").split(",")]
             card = config["newcard"]
             port = config["newport"]
             onu = config["newonu"]
@@ -236,21 +253,19 @@ async def control_gpon_minihw(ipaddress, listconfig):
             vlanims = config.get("vlanims", 0)
             vlanmytv = config.get("vlanmytv", 0)
             vlannet = config.get("vlannet", 0)
-            print(vlanims)
 
-            # Lấy các lệnh dựa trên loại lệnh
-            command_list = phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlannet)
-            
-            # Thực hiện từng lệnh và lưu kết quả
-            for cmd in command_list:
-                result = await execute_command_list(channel, cmd)
-                print(result)
-                results.append(result)
+            print(command_list)
+            # Thực hiện từng lệnh
+            for command in command_list:
+                command_steps = phan_loai_command(command, card, port, onu, slid, vlanims, vlanmytv, vlannet)
+                for step in command_steps:
+                    result = await execute_command(channel, step)
+                    print(result)
+                    results.append(result)
 
         # Đóng phiên SSH
-        channel.send("quit\n")
-        channel.send("quit\n")
-        channel.send("y\n")
+        channel.send('quit\n')
+        channel.send('y\n')
         channel.close()
         session.close()
 

@@ -83,3 +83,33 @@ async def change_password(change_password_model: ChangePasswordModel, token: str
     conn.gponbrastool.user.update_one({"_id": ObjectId(user_id)}, {"$set": {"password": new_hashed_password}})
     
     return HTTPException(status_code=200,detail={"msg": "Đổi mật khẩu thành công"})
+
+#Thay đổi quyền người dùng
+# Model để thay đổi quyền
+class ChangeRoleModel(BaseModel):
+    role: str
+
+# API để thay đổi quyền người dùng
+@userRoutes.put("/api/user/change-role/{user_id}", dependencies=[Depends(jwtBearer())])
+async def change_user_role(user_id: str, change_role_model: ChangeRoleModel, token: str = Depends(jwtBearer())):
+    try:
+        # Kiểm tra quyền hiện tại của người dùng
+        if token["role"] != "admin":
+            raise HTTPException(status_code=403, detail="Bạn không có quyền thay đổi quyền của người dùng khác")
+        
+        # Tìm người dùng theo user_id
+        db_user = conn.gponbrastool.user.find_one({"_id": ObjectId(user_id)})
+        if not db_user:
+            raise HTTPException(status_code=404, detail="Không tìm thấy tài khoản")
+
+        # Chỉ cho phép thay đổi thành các quyền hợp lệ
+        valid_roles = ["admin", "user bras", "user gpon"]
+        if change_role_model.role not in valid_roles:
+            raise HTTPException(status_code=400, detail="Quyền không hợp lệ")
+        
+        # Cập nhật quyền của người dùng
+        conn.gponbrastool.user.update_one({"_id": ObjectId(user_id)}, {"$set": {"role": change_role_model.role}})
+        
+        return {"msg": "Thay đổi quyền thành công", "role": change_role_model.role}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail={"msg": "Không thể thay đổi quyền", "error": str(e)})

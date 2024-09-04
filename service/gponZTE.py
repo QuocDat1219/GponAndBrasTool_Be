@@ -101,7 +101,8 @@ def phan_loai_command(command, card, port, onu, slid, vlanims, vlanmytv, vlannet
         ]
     elif command == "check_capacity":
         return [f"show pon power attenuation gpon-onu_1/{card}/{port}:{onu}",
-                "exit"]
+                "exit"
+                ]
     elif command == "check_mac":
         return [f"show mac gpon  onu  gpon-onu_1/{card}/{port}:{onu}",
                 "exit"
@@ -121,6 +122,52 @@ def phan_loai_command(command, card, port, onu, slid, vlanims, vlanmytv, vlannet
             "sn-bind disable",
             f"registration-method pw {slid}",
             "end",
+        ]
+    elif command == "create_dvnet_list":
+        return [
+            "configure t",
+            f"interface gpon-olt_1/{card}/{port}",
+            f"onu {onu} type iGate-GW040 pw {slid}",
+            "exit",
+            f"interface gpon-onu_1/{card}/{port}:{onu}",
+            "sn-bind disable",
+            "tcont 1 name HSI profile T4_100M",
+            "gemport 1 name HSI tcont 1",
+            "gemport 1 traffic-limit upstream D3000T3000 downstream D3000T3000",
+            "gemport 5 tcont 1",
+            "switchport mode hybrid vport 1",
+            "switchport mode hybrid vport 5",
+            f"service-port 1 vport 1 user-vlan 11  vlan {vlannet}",
+            "service-port 5 vport 5 user-vlan 4000 vlan 4040",
+            "port-identification format VNPT vport 1",
+            "pppoe-intermediate-agent enable vport 1",
+            "pppoe-intermediate-agent trust true replace vport 1",
+            "exit",
+            f"pon-onu-mng gpon-onu_1/{card}/{port}:{onu}",
+            "service 1 gemport 1 vlan 11",
+            "service 5 gemport 5 vlan 4000",
+            "wan-ip 1 mode pppoe vlan-profile HSI_PPPOE host 1",
+            "wan 1 service internet host 1",
+            "end",
+            "exit",
+            "exit"
+        ]
+    elif command == "dv_ims_list":
+        return [
+            "configure terminal",
+            f"interface gpon-onu_1/{card}/{port}:{onu}",
+            "sn-bind disable",
+            "tcont 3 name VOIP profile T1_80K",
+            "gemport 3 name VOIP tcont 3",
+            "gemport 3 traffic-limit upstream VoIP_1M downstream VoIP_1M",
+            f"service-port 3 vport 3 user-vlan 13 vlan {vlanims}",
+            "dhcpv4-l2-relay-agent enable vport 3",
+            "dhcpv4-l2-relay-agent trust true replace vport 3",
+            "exit",
+            f"pon-onu-mng gpon-onu_1/{card}/{port}:{onu}",
+            "service 3 gemport 3 vlan 13",
+            "exit",
+            "exit"
         ]
     else:
         raise HTTPException(status_code=400, detail="Lệnh trên thiết bị này chưa được cập nhật")
@@ -164,8 +211,8 @@ async def execute_telnet_command(reader, writer, cmd):
     output = await reader.read(65535)
     return cmd + '\n' + output.decode('latin-1').strip()
 
-# Hàm điều khiển GPON ZTE
-async def control_gpon_zte(ipaddress, listconfig):
+#Hàm điều khiển gpon zte tạo dãy
+async def control_gpon_zte_list(ipaddress, listconfig):
     try:
         # Kết nối Telnet
         reader, writer = await asyncio.open_connection(ipaddress, 23)
@@ -182,7 +229,7 @@ async def control_gpon_zte(ipaddress, listconfig):
 
         # Duyệt qua từng cấu hình trong listconfig
         for config in listconfig:
-            commands = config["commands"]
+            command_list = [cmd.strip() for cmd in config["commands"].strip("[]").split(",")]
             card = config["newcard"]
             port = config["newport"]
             onu = config["newonu"]
@@ -190,13 +237,15 @@ async def control_gpon_zte(ipaddress, listconfig):
             vlanims = config.get("vlanims", 0)
             vlanmytv = config.get("vlanmytv", 0)
             vlannet = config.get("vlannet", 0)
-            
+
+            print(command_list)
             # Phân loại và thực thi lệnh
-            cmd_list = phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlannet)
-            for cmd in cmd_list:
-                result = await execute_telnet_command(reader, writer, cmd)
-                print(result)
-                results.append(result)
+            for command in command_list:
+                command_steps = phan_loai_command(command, card, port, onu, slid, vlanims, vlanmytv, vlannet)
+                for cmd in command_steps:
+                    result = await execute_telnet_command(reader, writer, cmd)
+                    print(result)
+                    results.append(result)
 
         writer.write(b'exit\n')
         await writer.drain()
