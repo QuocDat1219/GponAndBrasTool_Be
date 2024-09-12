@@ -75,12 +75,12 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
     elif commands == "check_capacity":
         return [f"show equipment ont optics 1/1/{card}/{port}/{onu}",
                 "exit all",
-                # "logout"
+                "logout"
                 ]
     elif commands == "check_mac":
         return [f"show vlan bridge-port-fdb 1/1/{card}/{port}/{onu}/14/1",
                 "exit all",
-                # "logout"
+                "logout"
                 ]
     elif commands == "change_sync_password":
         return [f"configure equipment ont interface 1/1/{card}/{port}/{onu}",
@@ -222,19 +222,20 @@ async def control_gpon_alu_list(ipaddress, listconfig):
         
         results = []
 
+        print(listconfig)
+
         # Duyệt qua từng cấu hình trong listconfig
         for config in listconfig:
             # Chuyển đổi chuỗi lệnh thành danh sách
-            command_list = [cmd.strip() for cmd in config["commands"].strip("[]").split(",")]
+            command_list = config["commands"]
             card = config["newcard"]
             port = config["newport"]
             onu = config["newonu"]
             slid = config["slid"]  # Lấy giá trị slid nếu có
-            vlanims = config.get("vlanims", 0)
-            vlanmytv = config.get("vlanmytv", 0)
-            vlannet = config.get("vlannet", 0)
+            vlanims = config["vlanims"]
+            vlanmytv = config["vlanmytv"]
+            vlannet = config["vlannet"]
 
-            print(command_list)
             # Thực hiện từng lệnh
             for command in command_list:
                 command_steps = phan_loai_command(command, card, port, onu, slid, vlanims, vlanmytv, vlannet)

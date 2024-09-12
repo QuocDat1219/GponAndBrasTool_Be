@@ -1,5 +1,5 @@
 from datetime import datetime
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Query
 from models.userModel import User
 from config.db import conn
 from schemas.userSchemas import serializeDict, serializeList
@@ -96,7 +96,7 @@ def login_user(user: LoginModel):
         
         # Tạo JWT token
         token = signJWT(str(db_user["_id"]), db_user["fullname"], db_user["role"], db_user["username"])
-        return {"token": token, "role": role}
+        return {"access_token": token.get("access_token"), "role": role}
     except Exception as e:
         raise HTTPException(status_code=500, detail={"msg": "Sai tên tài khoản hoặc mật khẩu", "error": str(e)})
     
@@ -143,8 +143,27 @@ async def change_user_role(user_id: str, change_role_model: ChangeRoleModel, tok
             raise HTTPException(status_code=400, detail="Quyền không hợp lệ")
         
         # Cập nhật quyền của người dùng
-        conn.gponbrastool.user.update_one({"_id": ObjectId(user_id)}, {"$set": {"role": change_role_model.role}})
+        updated_role = conn.gponbrastool.user.update_one({"_id": ObjectId(user_id)}, {"$set": {"role": change_role_model.role}})
         
-        return {"msg": "Thay đổi quyền thành công", "role": change_role_model.role}
+        if updated_role.modified_count == 0:
+            raise HTTPException(status_code = 404, detail = {"msg": "Không tìm thấy người dùng này"})
+        return HTTPException(status_code=200, detail={"msg": "Thay đổi quyền thành công"})
     except Exception as e:
         raise HTTPException(status_code=500, detail={"msg": "Không thể thay đổi quyền", "error": str(e)})
+        
+@userRoutes.patch("/api/user/edit/{id}")
+async def edit_userInfo(id: str, fullname: str = Query(...)):
+    try:
+        # Cập nhật thông tin fullname cho user với id tương ứng
+        updated_user = conn.gponbrastool.user.update_one(
+            {"_id": ObjectId(id)}, 
+            {"$set": {"fullname": fullname}}
+        )
+
+        # Kiểm tra xem có bất kỳ tài liệu nào được cập nhật hay không
+        if updated_user.modified_count == 0:
+            raise HTTPException(status_code=404, detail="Không tìm thấy tài khoản hoặc không có thay đổi")
+
+        return {"msg": "Thay đổi thông tin thành công"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail={"msg": "Không thể thay đổi thông tin cá nhân", "error": str(e)})

@@ -6,6 +6,7 @@ from service.gponHW import control_gpon_hw_list
 from service.gponMiniHW import control_gpon_minihw_list
 from service.gponZTE import control_gpon_zte_list
 from service.gponMiniZTE import control_gpon_minizte_list
+from service.gponWebSocket import control_gpon_zte_ws
 
 controlManyGponRouter = APIRouter()
 
@@ -25,6 +26,8 @@ async def controlGpon(data: dict):
             return await control_gpon_zte_list(ipaddress, listconfig)
         elif loai_thiet_bi == "GPON MINI ZTE":
             return await control_gpon_minizte_list(ipaddress, listconfig)
+        elif loai_thiet_bi == "GPON WS ZTE":
+            return await control_gpon_zte_ws(ipaddress, listconfig)
         else:
             raise HTTPException(status_code=400, detail="Thiết bị này không được hỗ trợ")
     else:

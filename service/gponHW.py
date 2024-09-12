@@ -222,18 +222,18 @@ async def control_gpon_hw_list(ipaddress, listconfig):
         # Duyệt qua từng cấu hình trong listconfig
         for config in listconfig:
             # Chuyển đổi chuỗi lệnh thành danh sách
-            command_list = [cmd.strip() for cmd in config["commands"].strip("[]").split(",")]
+            command_list = config["commands"]
             card = config["newcard"]
             port = config["newport"]
             onu = config["newonu"]
             slid = config["slid"]  # Lấy giá trị slid nếu có
-            vlanims = config.get("vlanims", 0)
-            vlanmytv = config.get("vlanmytv", 0)
-            vlannet = config.get("vlannet", 0)
-            service_portnet = config.get("service_portnet",0)
-            service_portgnms = config.get("service_portgnms",0)
-            service_portims = config.get("service_portims",0)
-            print(command_list)
+            vlanims = config["vlanims"]
+            vlanmytv = config["vlanmytv"]
+            vlannet = config["vlannet"]
+            service_portnet = config["service_portnet"]
+            service_portgnms = config["service_portgnms"]
+            service_portims = config["service_portims"]
+
             # Thực hiện từng lệnh
             for command in command_list:
                 command_steps = phan_loai_command(command, card, port, onu, slid, vlanims, vlanmytv, vlannet,service_portnet,service_portgnms,service_portims)
