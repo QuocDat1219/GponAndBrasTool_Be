@@ -61,7 +61,7 @@ async def ssh_bras_command_with_mac(command, mac):
         session = paramiko.SSHClient()
         session.load_system_host_keys()
         session.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        session.connect(hostname_bras, username=user_bras, password=password_bras)
+        session.connect(hostname_bras, username=user_bras, password=password_bras, port=2222)
         if len(mac) < 17 or len(mac) > 17:
             raise HTTPException(status_code=500, detail=f"Địa chỉ mac không đúng định dạng")
         else:
@@ -106,7 +106,7 @@ async def ssh_bras_command_with_username(command, username_bras):
         session = paramiko.SSHClient()
         session.load_system_host_keys()
         session.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        session.connect(hostname_bras, username=user_bras, password=password_bras)
+        session.connect(hostname_bras, username=user_bras, password=password_bras,port=2222)
         if len(username_bras) <= 0:
             raise HTTPException(status_code=400, detail="Chưa nhập username")
         else:
@@ -128,7 +128,7 @@ async def ssh_bras_command(command):
         session = paramiko.SSHClient()
         session.load_system_host_keys()
         session.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        session.connect(hostname_bras, username=user_bras, password=password_bras)
+        session.connect(hostname_bras, username=user_bras, password=password_bras, port=2222)
        
         cmd = command_no_param(command)
         print(cmd)

@@ -103,7 +103,7 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
         return [
             f"configure equipment ont interface 1/1/{card}/{port}/{onu} sw-ver-pland disabled subslocid {slid} fec-up disable sw-dnload-version disabled plnd-var SIP enable-aes enable sn-bundle-ctrl bundle",
             "exit all",
-            f"configure equipment ont slot 1/1/{card}/{port}/{onu}/14 planned-card-type veip plndnumdataports 1 plndnumvoiceports 0 port-type uni admin-state up",
+            f"configure equipment ont slot 1/1/{card}/{port}/{onu}/14 planned-card-type veip plndnumdataports 1 plndnumvoiceports 0 port-type uni",
             "exit all",
             f"configure interface port uni:1/1/{card}/{port}/{onu}/14/1 admin-up",
             "exit all",
@@ -123,7 +123,6 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
             f"configure qos interface 1/1/{card}/{port}/{onu}/14/1 queue 5 shaper-profile name:VoIP",
             f"configure qos interface 1/1/{card}/{port}/{onu}/14/1 upstream-queue 5 bandwidth-profile name:VoIP",
             f"configure bridge port 1/1/{card}/{port}/{onu}/14/1 vlan-id 13 tag single-tagged l2fwder-vlan {vlanims} vlan-scope local",
-            f"configure bridge port 1/1/{card}/{port}/{onu}/14/1 vlan-id 4000 tag single-tagged l2fwder-vlan 4040 vlan-scope local",
             "exit all"
         ]
     else:

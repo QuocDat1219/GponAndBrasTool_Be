@@ -31,14 +31,11 @@ def verify_password(plain_password:str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
 #Lấy danh sách tài khoản
-@userRoutes.get("/api/user/")
+@userRoutes.get("/api/user/", dependencies=[Depends(jwtBearer())])
 def get_all_user():
     try:
         # Tìm tất cả người dùng không phải là admin và không lấy trường mật khẩu
-        user_list = list(conn.gponbrastool.user.find(
-            {"role": {"$ne": "admin"}},  # Lọc các tài khoản không phải là admin
-            {"password": 0}  # Không lấy trường mật khẩu
-        ))
+        user_list = serializeList(conn.gponbrastool.user.find())
 
         if not user_list:
             return []
@@ -48,7 +45,7 @@ def get_all_user():
         raise HTTPException(status_code=500, detail=str(e))
     
 #Lấy danh sách tài khoản
-@userRoutes.get("/api/user/{id}")
+@userRoutes.get("/api/user/{id}", dependencies=[Depends(jwtBearer())])
 def get_all_user(id):
     try:
         user = conn.gponbrastool.user.find_one({"_id": ObjectId(id)})
@@ -60,7 +57,7 @@ def get_all_user(id):
         raise HTTPException(status_code=500, detail=str(e))
 
 # Create new user
-@userRoutes.post("/api/user/")
+@userRoutes.post("/api/user/", dependencies=[Depends(jwtBearer())])
 def create_New_User(user: User):
     try:
         if conn.gponbrastool.user.find_one({"username": user.username}):
@@ -119,13 +116,31 @@ async def change_password(change_password_model: ChangePasswordModel, token: str
     
     return HTTPException(status_code=200,detail={"msg": "Đổi mật khẩu thành công"})
 
+
+# Reset mật khẩu
+@userRoutes.put("/api/user/reset-password/{id}", dependencies=[Depends(jwtBearer())])
+async def reset_password(id, token: str = Depends(jwtBearer())):
+    try:
+        if token["role"] != "admin":
+            raise HTTPException(status_code = 403, detail = "Bạn không có quyền đặt lại mật khẩu!")
+         # Tìm người dùng theo user_id
+        db_user = conn.gponbrastool.user.find_one({"_id": ObjectId(id)})
+        if not db_user:
+            raise HTTPException(status_code=404, detail="Không tìm thấy tài khoản")
+        new_hashed_password = hash_password("vnptvlg")
+        conn.gponbrastool.user.update_one({"_id": ObjectId(id)}, {"$set": {"password": new_hashed_password}})
+        return HTTPException(status_code = 200, detail = {"msg": "Đặt lại mật khẩu thành công"})
+    except Exception as e:
+        raise HTTPException(status_code=500, detail={"msg": "Không thể đặt lại mật khẩu", "error": str(e)})
+
 #Thay đổi quyền người dùng
 # Model để thay đổi quyền
 class ChangeRoleModel(BaseModel):
     role: str
+    fullname: str
 
 # API để thay đổi quyền người dùng
-@userRoutes.put("/api/user/change-role/{user_id}", dependencies=[Depends(jwtBearer())])
+@userRoutes.put("/api/user/edit/{user_id}", dependencies=[Depends(jwtBearer())])
 async def change_user_role(user_id: str, change_role_model: ChangeRoleModel, token: str = Depends(jwtBearer())):
     try:
         # Kiểm tra quyền hiện tại của người dùng
@@ -143,15 +158,15 @@ async def change_user_role(user_id: str, change_role_model: ChangeRoleModel, tok
             raise HTTPException(status_code=400, detail="Quyền không hợp lệ")
         
         # Cập nhật quyền của người dùng
-        updated_role = conn.gponbrastool.user.update_one({"_id": ObjectId(user_id)}, {"$set": {"role": change_role_model.role}})
+        updated_role = conn.gponbrastool.user.update_one({"_id": ObjectId(user_id)}, {"$set": {"role": change_role_model.role, "fullname": change_role_model.fullname}})
         
         if updated_role.modified_count == 0:
             raise HTTPException(status_code = 404, detail = {"msg": "Không tìm thấy người dùng này"})
-        return HTTPException(status_code=200, detail={"msg": "Thay đổi quyền thành công"})
+        return HTTPException(status_code=200, detail={"msg": "Thay đổi quyền thành công", "data": serializeList(conn.gponbrastool.user.find())})
     except Exception as e:
         raise HTTPException(status_code=500, detail={"msg": "Không thể thay đổi quyền", "error": str(e)})
         
-@userRoutes.patch("/api/user/edit/{id}")
+@userRoutes.patch("/api/user/edit/{id}", dependencies=[Depends(jwtBearer())])
 async def edit_userInfo(id: str, fullname: str = Query(...)):
     try:
         # Cập nhật thông tin fullname cho user với id tương ứng
@@ -167,3 +182,17 @@ async def edit_userInfo(id: str, fullname: str = Query(...)):
         return {"msg": "Thay đổi thông tin thành công"}
     except Exception as e:
         raise HTTPException(status_code=500, detail={"msg": "Không thể thay đổi thông tin cá nhân", "error": str(e)})
+    
+
+    #Xoa tai khoan
+@userRoutes.delete("/api/user/{id}", dependencies=[Depends(jwtBearer())])
+def delete_user(id):
+    try:
+        deleted_user = conn.gponbrastool.user.delete_one({"_id": ObjectId(id)})
+        
+        if deleted_user.deleted_count == 1:
+            return HTTPException(status_code = 200, detail = {"msg":"success", "data": serializeList(conn.gponbrastool.user.find())})
+        else:
+            return HTTPException(status_code=500, detail={"msg": "error"})
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

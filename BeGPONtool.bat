@@ -32,4 +32,4 @@
 ::
 ::978f952a14a936cc963da21a135fa983
 @echo off
-python -m uvicorn index:app --host 0.0.0.0 --port 8282 --reload
+python -m uvicorn index:app --host 0.0.0.0 --port 8484 --reload

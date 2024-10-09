@@ -7,7 +7,7 @@ from service.cts import call_api, get_user_visa
 
 ctsRouter = APIRouter()
 
-@ctsRouter.post("/api/cts/",dependencies=[Depends(jwtBearer())])
+@ctsRouter.post("/api/cts",dependencies=[Depends(jwtBearer())])
 async def get_user_cts(data: dict):
     username = data["username"]
     if username:

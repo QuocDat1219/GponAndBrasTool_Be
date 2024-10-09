@@ -140,7 +140,6 @@ async def execute_command(channel, cmd):
     return final_output
 
 async def ssh_bras_gpon_hw_command(ipaddress, commands, card, port, onu, slid, vlanims, vlanmytv, vlannet, service_portnet, service_portgnms, service_portims):
-    print(commands) 
     try:
         session = paramiko.SSHClient()
         session.load_system_host_keys()
@@ -170,7 +169,6 @@ async def ssh_bras_gpon_hw_command(ipaddress, commands, card, port, onu, slid, v
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail=f"error: {str(e)}")
-
 
 async def execute_command_list(channel, cmd):
     channel.send(cmd + '\n')

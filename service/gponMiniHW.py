@@ -194,7 +194,6 @@ async def ssh_bras_gpon_minihw_command(ipaddress, commands, card, port, onu, sli
         print(e)
         raise HTTPException(status_code=500, detail=f"error: {str(e)}")
 
-
 async def execute_command_list(channel, cmd):
     channel.send(cmd + '\n')
     await asyncio.sleep(1)
