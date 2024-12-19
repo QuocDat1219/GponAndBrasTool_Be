@@ -1,8 +1,12 @@
 def historyEntity(item) -> dict:
     return {
         "id": str(item['_id']),
-        "history": item['history'],
-        "stats": item['status']
+        "use_time": item['use_time'],
+        "user_gpon": item['user_gpon'],
+        "gpon_type": item['gpon_type'],
+        "ip_gpon": item['ip_gpon'],
+        "feature_gpon": item['feature_gpon'],
+        "status": item['status']
     }
     
 def serializeDict(a) -> dict:

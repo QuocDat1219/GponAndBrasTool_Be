@@ -21,7 +21,7 @@ def format_command(command):
     if command == "view_info_onu":
         return "Xem info (GPON MINI HW && GPOM HW)"
     if command == "check_capacity":
-        return "iểm tra công suất"
+        return "Kiểm tra công suất"
     if command == "check_service_port":
         return "Kiểm tra service port cho OLT HW"
     if command == "change_sync_password":
@@ -54,12 +54,15 @@ async def ssh_gpon(data: dict,token: str = Depends(jwtBearer())):  # Thêm đố
     user_gpon = token["fullname"]
     command_history = format_command(commands)
     dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
-    text = f"Ngày {dt_string}: Người dùng: {user_gpon}, khai thác thiết bị {loai_thiet_bi}, Ipaddress: {ipaddress}, chức năng: {command_history}. Thông số card: {card}, port: {port}, onu: {onu}, vlannet: {vlannet}, vlanims:{vlanims}, vlanmytv: {vlanmytv}"
+   
     # Tạo đối tượng lịch sử
     history_entry = {
-        "history": text,
+        "use_time": dt_string,
+        "user_gpon": user_gpon,
+        "gpon_type": loai_thiet_bi,
+        "ip_gpon": ipaddress,
+        "feature_gpon": command_history,
         "status": "H",
-        "created_at": dt_string
     }
 
     # Lưu vào database

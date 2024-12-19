@@ -72,12 +72,8 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
                 "y"
         ]
     elif commands == "change_sync_password_list":
-        return ["Config",
-                f"interface  gpon 0/{card}",
-                f"ont  modify {port} {onu} password {slid}",
-                "quit",
-                "quit"
-        ]
+        return [
+                f"ont  modify {port} {onu} password {slid}"]
     elif commands == "check_service_port":
         return [
             f"display service-port port 0/{card}/{port} ont {onu}",
@@ -216,7 +212,13 @@ async def control_gpon_hw_list(ipaddress, listconfig):
             output = channel.recv(65535).decode('utf-8')
         
         results = []
-
+        card_seting = listconfig["newcard"]
+        channel.send('Config\n')
+        await asyncio.sleep(0.5)
+        channel.send(f'interface  gpon 0/{card_seting}\n')
+        await asyncio.sleep(0.5)
+        output = channel.recv(65535).decode().strip()
+        results.append(output)
         # Duyệt qua từng cấu hình trong listconfig
         for config in listconfig:
             # Chuyển đổi chuỗi lệnh thành danh sách
@@ -242,7 +244,15 @@ async def control_gpon_hw_list(ipaddress, listconfig):
 
         # Đóng phiên SSH
         channel.send('quit\n')
+        await asyncio.sleep(0.5)
+        channel.send('quit\n')
+        await asyncio.sleep(0.5)
+        channel.send('quit\n')
+        await asyncio.sleep(0.5)
         channel.send('y\n')
+        await asyncio.sleep(0.5)
+        output = channel.recv(65535).decode().strip()  
+        results.append(output)  
         channel.close()
         session.close()
 

@@ -21,7 +21,7 @@ def get_all_history():
 def delete_history():
     try:
         deleted_history = conn.gponbrastool.history.delete_many({"status": "H"})
-        if deleted_history.deleted_count == 1:
+        if deleted_history.deleted_count > 0:
             return HTTPException(status_code = 200, detail={ "msg" : f"success", "data": serializeList(conn.gponbrastool.history.find())})
         else:
              return HTTPException(status_code = 500,detail={ "msg" : f"error"})

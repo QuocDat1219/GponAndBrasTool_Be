@@ -111,7 +111,7 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
             f"interface  gpon_onu-1/3/{port}:{onu}",
             "sn-bind disable",
             f"auth-id pw {slid}",
-            "end",
+            "exit",
             "exit",
             "y"
         ]
@@ -211,6 +211,7 @@ async def ssh_bras_gpon_mini_zte_command(ipaddress, commands, card, port, onu, s
         results = []
         # Chạy lần lượt từng command
         for cmd in command:
+            print(cmd)
             result = await execute_command(channel, cmd)
             # Gán các kết quả trả về vào mảng
             results.append(result)
