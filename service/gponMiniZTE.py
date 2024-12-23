@@ -106,14 +106,29 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
         return [f"show mac interface gpon_onu-1/3/{port}:{onu}",
                 "exit"
                 ]
+    elif commands == "reboot_zte":
+        return ["configure terminal",
+                f"pon-onu-mng gpon_onu-1/{card}/{port}:{onu}",
+                "reboot",
+                "yes",
+                "end",
+                "exit",
+                ]
+    elif commands == "delete_wan_ip_zte":
+        return [
+            "configure terminal",
+            f"pon-onu-mng gpon_onu-1/{card}/{port}:{onu}",
+            "no wan-ip",
+            "end",
+            "exit"
+        ]
     elif commands == "change_sync_password":
         return ["configure terminal",
             f"interface  gpon_onu-1/3/{port}:{onu}",
             "sn-bind disable",
             f"auth-id pw {slid}",
             "exit",
-            "exit",
-            "y"
+            "exit"
         ]
     elif commands == "change_sync_password_list":
         return ["configure terminal",

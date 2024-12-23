@@ -107,14 +107,29 @@ def phan_loai_command(command, card, port, onu, slid, vlanims, vlanmytv, vlannet
         return [f"show mac gpon  onu  gpon-onu_1/{card}/{port}:{onu}",
                 "exit"
                 ]
+    elif command == "reboot_zte":
+        return ["configure terminal",
+                f"pon-onu-mng gpon_onu-1/{card}/{port}:{onu}",
+                "reboot",
+                "yes",
+                "end",
+                "exit",
+                ]
+    elif command == "delete_wan_ip_zte":
+        return [
+            "configure terminal",
+            f"pon-onu-mng gpon_onu-1/{card}/{port}:{onu}",
+            "no wan-ip 1",
+            "end",
+            "exit"
+        ]
     elif command == "change_sync_password":
         return ["configure  terminal",
                 f"interface  gpon-onu_1/{card}/{port}:{onu}",
                 "sn-bind disable",
                 f"registration-method pw {slid}",
                 "end",
-                "exit",
-                "y"
+                "exit"
                 ]
     elif command == "change_sync_password_list":
         return ["configure terminal",
@@ -247,9 +262,6 @@ async def control_gpon_zte_list(ipaddress, listconfig):
                     results.append(result)
 
         writer.write(b'exit\n')
-        await writer.drain()
-        await asyncio.sleep(0.7)
-        writer.write(b'y\n')
         await writer.drain()
         await asyncio.sleep(0.7)
         writer.close()

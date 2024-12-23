@@ -82,6 +82,8 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
                 "exit all",
                 "logout"
                 ]
+    elif commands == "reboot_alu":
+        return [f"admin equipment ont interface 1/1/{card}/{port}/{onu} reboot with-active-image"]
     elif commands == "change_sync_password":
         return [f"configure equipment ont interface 1/1/{card}/{port}/{onu}",
             f"configure equipment ont interface 1/1/{card}/{port}/{onu} admin-state  down",

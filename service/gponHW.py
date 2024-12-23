@@ -62,6 +62,15 @@ def phan_loai_command(commands, card, port, onu, slid, vlanims, vlanmytv, vlanne
                 "quit",
                 "y"
                 ]
+    elif commands == "reboot_hw":
+        return ["config",
+                f"interface gpon 0/{card}",
+                f"ont reset {card} {port}",
+                "y",
+                "quit",
+                "quit",
+                "y"
+                ]
     elif commands == "change_sync_password":
         return ["Config",
                 f"interface  gpon 0/{card}",
